@@ -1,27 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Upscaler – 2000×2000</title>
+    <title>ابزار تغییر رزولوشن تصویر</title>
+    <!-- =============================================
+         لود فونت وزیرمتن (Vazirmatn) از CDN 
+         اولویت: Vazirmatn، سپس Tahoma, Arial
+         ============================================= -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     <style>
-        :root {
-            --bg: #f8f9fb;
-            --surface: #ffffff;
-            --border: #e2e5ea;
-            --text: #1a1d23;
-            --text-secondary: #5f6368;
-            --accent: #3b6df0;
-            --accent-hover: #2851d1;
-            --accent-light: #eef3ff;
-            --danger: #d93025;
-            --radius: 16px;
-            --radius-sm: 10px;
-            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
-            --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08), 0 16px 48px rgba(0, 0, 0, 0.06);
-            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
+        /* ========================================
+           CSS اصلی برنامه - طراحی مدرن و واکنش‌گرا
+           فونت: Vazirmatn, Tahoma, Arial, sans-serif
+           ======================================== */
         * {
             margin: 0;
             padding: 0;
@@ -29,736 +21,867 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: Vazirmatn, Tahoma, Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 24px;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+            color: #333;
+            direction: rtl;
+            padding: 20px 10px;
+            line-height: 1.7;
+            /* بهبود خوانایی متن فارسی */
+            font-weight: 400;
         }
 
-        .app-container {
+        /* کانتینر اصلی با عرض محدود و متمرکز - فقط ابزار اصلی */
+        .main-container {
             width: 100%;
-            max-width: 780px;
+            max-width: 850px;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.08);
+            padding: 35px 30px;
+            margin: 20px 0 15px 0;
             display: flex;
             flex-direction: column;
             gap: 28px;
         }
 
-        /* Header */
-        .app-header {
+        /* هدر و عنوان */
+        .header {
             text-align: center;
+            margin-bottom: 5px;
         }
-        .app-header h1 {
-            font-size: 1.6rem;
+
+        .header h1 {
+            font-size: 26px;
+            color: #1e2a3a;
             font-weight: 700;
-            letter-spacing: -0.02em;
-            color: var(--text);
-            margin-bottom: 4px;
+            letter-spacing: -0.3px;
         }
-        .app-header .subtitle {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
+
+        .header p {
+            color: #5a6a7e;
+            font-size: 15px;
+            margin-top: 4px;
             font-weight: 400;
         }
 
-        /* Upload Area */
+        /* بخش آپلود (درگ‌اند‌دراپ) - بدون آیکون اضافی */
         .upload-area {
-            position: relative;
-            background: var(--surface);
-            border: 2px dashed var(--border);
-            border-radius: var(--radius);
-            padding: 52px 32px;
+            border: 3px dashed #b0bec5;
+            border-radius: 18px;
+            padding: 45px 25px;
             text-align: center;
+            background: #fafcfd;
+            transition: all 0.25s ease;
             cursor: pointer;
-            transition: all var(--transition);
-            user-select: none;
-            -webkit-user-select: none;
-            outline: none;
+            position: relative;
         }
-        .upload-area:hover {
-            border-color: #c4c9d4;
-            background: #fafbfc;
-            box-shadow: var(--shadow-card);
-        }
-        .upload-area.drag-over {
-            border-color: var(--accent);
-            background: var(--accent-light);
-            box-shadow: 0 0 0 8px rgba(59, 109, 240, 0.06);
-            transform: scale(1.01);
-        }
-        .upload-area.has-image {
-            padding: 28px 32px;
-            border-style: solid;
-            border-color: var(--border);
-            background: #fafbfc;
-        }
-        .upload-icon {
-            display: block;
-            margin: 0 auto 16px;
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            background: var(--accent-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all var(--transition);
-        }
-        .upload-area.drag-over .upload-icon {
-            background: #d6e2ff;
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            border-color: #1976d2;
+            background: #eef3fa;
             transform: translateY(-2px);
         }
-        .upload-icon svg {
-            width: 24px;
-            height: 24px;
-            color: var(--accent);
-        }
-        .upload-text {
-            font-size: 1.05rem;
+
+        .upload-area .upload-text {
+            font-size: 19px;
+            color: #1e2a3a;
+            margin-bottom: 12px;
             font-weight: 600;
-            color: var(--text);
-            margin-bottom: 6px;
-            letter-spacing: -0.01em;
-        }
-        .upload-hint {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-        .upload-area.has-image .upload-text {
-            font-size: 0.95rem;
-        }
-        .upload-area.has-image .upload-icon {
-            width: 38px;
-            height: 38px;
-        }
-        .upload-area.has-image .upload-icon svg {
-            width: 18px;
-            height: 18px;
         }
 
-        /* Preview Section */
-        .preview-section {
+        .upload-area .upload-hint {
+            font-size: 14px;
+            color: #6b7b8d;
+            margin-bottom: 22px;
+            line-height: 1.8;
+        }
+
+        /* دکمه اصلی آپلود - ساده، بزرگ و فارسی */
+        .file-input-label {
+            display: inline-block;
+            background: #1976d2;
+            color: white;
+            padding: 14px 36px;
+            border-radius: 40px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 8px 20px rgba(25, 118, 210, 0.2);
+            border: none;
+            font-family: Vazirmatn, Tahoma, Arial, sans-serif;
+            letter-spacing: 0;
+        }
+
+        .file-input-label:hover {
+            background: #1565c0;
+            box-shadow: 0 10px 24px rgba(21, 101, 192, 0.25);
+        }
+
+        #fileInput {
             display: none;
-            flex-direction: column;
-            gap: 20px;
-            animation: fadeSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .preview-section.visible {
-            display: flex;
         }
 
-        @keyframes fadeSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(16px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .preview-grid {
+        /* بخش لینک مستقیم */
+        .url-section {
             display: flex;
-            gap: 20px;
+            gap: 12px;
             flex-wrap: wrap;
+            align-items: center;
+            background: #f4f6f8;
+            padding: 16px 20px;
+            border-radius: 14px;
+            border: 1px solid #e1e6eb;
         }
 
-        .preview-card {
-            flex: 1;
-            min-width: 260px;
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 20px;
-            box-shadow: var(--shadow-card);
+        .url-section label {
+            font-weight: 600;
+            color: #1e2a3a;
+            white-space: nowrap;
+            font-size: 15px;
+        }
+
+        .url-section input {
+            flex: 1 1 220px;
+            padding: 12px 16px;
+            border: 2px solid #dde1e6;
+            border-radius: 10px;
+            font-family: Vazirmatn, Tahoma, Arial, sans-serif;
+            font-size: 14px;
+            transition: border 0.2s;
+            background: white;
+        }
+
+        .url-section input:focus {
+            border-color: #1976d2;
+            outline: none;
+        }
+
+        .url-section button {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: Vazirmatn, Tahoma, Arial, sans-serif;
+            font-size: 14px;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .url-section button:hover {
+            background: #1b5e20;
+        }
+
+        /* بخش تنظیمات رزولوشن (نمایش رزولوشن اولیه و سفارشی) */
+        .resolution-panel {
+            background: #f8fafc;
+            border-radius: 18px;
+            padding: 22px 20px;
+            border: 1px solid #e9eef2;
             display: flex;
             flex-direction: column;
+            gap: 18px;
+        }
+
+        .initial-res-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #e8f0fe;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #0d3b66;
+        }
+
+        .initial-res-info span:first-child {
+            font-weight: 700;
+            margin-left: 5px;
+        }
+
+        .custom-res-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1e2a3a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .resolution-inputs {
+            display: flex;
+            flex-wrap: wrap;
             align-items: center;
             gap: 14px;
         }
-        .preview-card-label {
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-secondary);
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 2px solid #dde1e6;
+            flex: 1 1 140px;
         }
-        .preview-image-wrapper {
+
+        .input-group label {
+            font-weight: 600;
+            color: #37474f;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            border: none;
+            outline: none;
             width: 100%;
-            max-width: 300px;
-            aspect-ratio: 1 / 1;
+            font-family: Vazirmatn, Tahoma, Arial, sans-serif;
+            font-size: 16px;
+            padding: 6px;
+            text-align: center;
+            background: transparent;
+            font-weight: 500;
+        }
+
+        .lock-icon {
+            font-size: 26px;
+            cursor: pointer;
+            user-select: none;
+            background: white;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            background: #f1f2f4;
-            position: relative;
-        }
-        .preview-image-wrapper img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            border-radius: var(--radius-sm);
+            border: 2px solid #dde1e6;
+            transition: all 0.2s;
+            background: #f9fafb;
+            font-weight: bold;
         }
 
-        /* Checkerboard for transparency preview */
-        .checkerboard-bg {
-            background-image:
-                linear-gradient(45deg, #e8e8e8 25%, transparent 25%),
-                linear-gradient(-45deg, #e8e8e8 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, #e8e8e8 75%),
-                linear-gradient(-45deg, transparent 75%, #e8e8e8 75%);
-            background-size: 18px 18px;
-            background-position: 0 0, 0 9px, 9px -9px, -9px 0px;
-            border-radius: var(--radius-sm);
-        }
-        .preview-image-wrapper.checkerboard-bg {
-            background-color: #fafafa;
-        }
-        .preview-image-wrapper canvas {
-            display: block;
-            border-radius: var(--radius-sm);
-            position: relative;
-            z-index: 1;
+        .lock-icon.locked {
+            background: #1976d2;
+            color: white;
+            border-color: #1976d2;
+            box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
         }
 
-        .preview-resolution {
-            font-size: 0.82rem;
-            color: var(--text-secondary);
+        .apply-btn {
+            background: #e65100;
+            color: white;
+            border: none;
+            padding: 13px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: Vazirmatn, Tahoma, Arial, sans-serif;
+            font-size: 16px;
+            transition: background 0.2s;
+            align-self: flex-start;
+            box-shadow: 0 6px 16px rgba(230, 81, 0, 0.2);
+            letter-spacing: 0;
+        }
+
+        .apply-btn:hover {
+            background: #bf360c;
+        }
+
+        .output-res-info {
+            font-size: 15px;
+            color: #2e3b4e;
+            background: #eef2f5;
+            padding: 10px 18px;
+            border-radius: 20px;
+            display: inline-block;
+            align-self: flex-start;
             font-weight: 500;
-            text-align: center;
-            letter-spacing: -0.01em;
-        }
-        .preview-resolution span {
-            font-weight: 700;
-            color: var(--text);
         }
 
-        /* Info bar */
-        .info-bar {
-            display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
-            justify-content: center;
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 18px 28px;
-            box-shadow: var(--shadow-card);
-        }
-        .info-item {
+        /* بخش خروجی و دانلود */
+        .output-section {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-        .info-label {
-            font-size: 0.72rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--text-secondary);
-        }
-        .info-value {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text);
-            letter-spacing: -0.01em;
-        }
-        .info-arrow {
-            display: flex;
-            align-items: center;
-            color: var(--accent);
-            font-size: 1.3rem;
-            font-weight: 700;
+            gap: 20px;
         }
 
-        /* Download Button */
-        .btn-download {
+        .output-preview-box {
+            max-width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e9ecef;
+            background: #fdfdfd;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            width: 100%;
-            padding: 16px 28px;
-            font-size: 1.05rem;
+        }
+
+        .output-preview-box img {
+            max-width: 100%;
+            max-height: 420px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .format-selection {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .format-selection label {
             font-weight: 600;
-            letter-spacing: -0.01em;
-            color: #fff;
-            background: var(--accent);
-            border: none;
-            border-radius: var(--radius);
-            cursor: pointer;
-            transition: all var(--transition);
-            box-shadow: 0 2px 8px rgba(59, 109, 240, 0.25);
-            font-family: inherit;
-        }
-        .btn-download:hover {
-            background: var(--accent-hover);
-            box-shadow: 0 6px 20px rgba(59, 109, 240, 0.35);
-            transform: translateY(-1px);
-        }
-        .btn-download:active {
-            transform: scale(0.98);
-            box-shadow: 0 1px 4px rgba(59, 109, 240, 0.2);
-        }
-        .btn-download svg {
-            width: 20px;
-            height: 20px;
+            color: #1e2a3a;
+            font-size: 15px;
         }
 
-        /* Error toast */
-        .error-toast {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-120px);
-            background: #fef2f2;
-            color: var(--danger);
-            border: 1px solid #fecaca;
-            padding: 12px 22px;
+        .format-selection select {
+            padding: 11px 18px;
             border-radius: 10px;
+            border: 2px solid #dde1e6;
+            font-family: Vazirmatn, Tahoma, Arial, sans-serif;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
             font-weight: 500;
-            font-size: 0.9rem;
-            z-index: 100;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 16px rgba(217, 48, 37, 0.12);
-        }
-        .error-toast.show {
-            transform: translateX(-50%) translateY(0);
         }
 
-        /* Responsive */
+        .download-btn {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 15px 32px;
+            border-radius: 34px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: Vazirmatn, Tahoma, Arial, sans-serif;
+            font-size: 17px;
+            transition: background 0.2s;
+            box-shadow: 0 8px 22px rgba(46, 125, 50, 0.2);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            align-self: flex-start;
+        }
+
+        .download-btn:hover {
+            background: #1b5e20;
+        }
+
+        .download-btn:disabled {
+            background: #b0bec5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* ---------- بخش Made by Abbas (خارج از کادر اصلی) ---------- */
+        .creator-outside {
+            text-align: center;
+            margin: 8px 0 12px 0;
+            font-size: 14px;
+            color: #5e6f80;
+            font-weight: 400;
+        }
+
+        .creator-outside .creator-link {
+            color: #b71c1c;
+            text-decoration: none;
+            font-weight: 700;
+            border-bottom: 2px dotted #b71c1c;
+            transition: color 0.2s, border-color 0.2s;
+            cursor: pointer;
+            margin: 0 4px;
+        }
+
+        .creator-outside .creator-link:hover {
+            color: #7f0000;
+            border-bottom: 2px solid #7f0000;
+        }
+
+        /* فوتر */
+        .footer {
+            text-align: center;
+            padding: 22px 18px;
+            background: #1e2a3a;
+            color: #cfd8dc;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 850px;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 5px;
+            font-weight: 400;
+        }
+
+        .footer strong {
+            color: #ffffff;
+        }
+
+        .footer .footer-desc {
+            font-size: 13px;
+            color: #90a4ae;
+        }
+
+        /* واکنش‌گرایی موبایل */
         @media (max-width: 600px) {
-            body {
-                padding: 16px;
+            .main-container {
+                padding: 22px 16px;
+                gap: 22px;
             }
             .upload-area {
-                padding: 36px 20px;
+                padding: 30px 15px;
             }
-            .upload-area.has-image {
-                padding: 20px 16px;
+            .url-section {
+                flex-direction: column;
+                align-items: stretch;
             }
-            .upload-text {
-                font-size: 0.95rem;
-            }
-            .preview-grid {
+            .resolution-inputs {
                 flex-direction: column;
             }
-            .preview-card {
-                min-width: auto;
+            .apply-btn {
+                width: 100%;
+                text-align: center;
             }
-            .info-bar {
-                gap: 14px;
-                padding: 14px 18px;
-            }
-            .info-value {
-                font-size: 0.95rem;
+            .header h1 {
+                font-size: 22px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="app-header">
-            <h1>Image Upscaler</h1>
-            <p class="subtitle">Resize any image to 2000×2000 pixels with transparent padding</p>
-        </header>
 
-        <!-- Upload Area -->
-        <div class="upload-area" id="uploadArea" tabindex="0" role="button" aria-label="Upload image">
-            <div class="upload-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="17 8 12 3 7 8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-            </div>
-            <p class="upload-text">Drop image here or click / Paste (Ctrl+V)</p>
-            <p class="upload-hint">Supports PNG, JPEG, GIF, WebP, BMP, SVG</p>
+    <!-- ========== کادر اصلی ابزار (فقط بخش‌های مربوط به پردازش تصویر) ========== -->
+    <div class="main-container">
+        
+        <!-- هدر -->
+        <div class="header">
+            <h1>ابزار تغییر رزولوشن تصویر</h1>
+            <p>تصویر خود را بارگذاری کنید و با کیفیت بالا به رزولوشن دلخواه تغییر دهید</p>
         </div>
 
-        <!-- Hidden file input -->
-        <input type="file" id="fileInput" accept="image/*" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;" />
+        <!-- بخش آپلود (درگ‌اند‌دراپ + کلیک) - بدون آیکون، فقط متن و دکمه -->
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-text">تصویر خود را اینجا رها کنید</div>
+            <div class="upload-hint">
+                یا با کلیک روی دکمه زیر فایل را انتخاب کنید<br>
+                همچنین می‌توانید تصویر کپی شده را با Ctrl+V جای‌گذاری کنید
+            </div>
+            <!-- دکمه آپلود ساده و فارسی -->
+            <label for="fileInput" class="file-input-label">انتخاب تصویر</label>
+            <input type="file" id="fileInput" accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff">
+        </div>
 
-        <!-- Preview Section -->
-        <div class="preview-section" id="previewSection">
-            <div class="preview-grid">
-                <!-- Original preview -->
-                <div class="preview-card">
-                    <span class="preview-card-label">Original</span>
-                    <div class="preview-image-wrapper" id="originalPreviewWrapper">
-                        <img id="originalPreviewImg" src="" alt="Original image preview" style="display:none;" />
-                        <span id="noOriginalPlaceholder" style="color:#9aa0a8;font-size:0.85rem;">—</span>
-                    </div>
-                    <p class="preview-resolution" id="originalResolution">—</p>
-                </div>
-                <!-- Output preview -->
-                <div class="preview-card">
-                    <span class="preview-card-label">Output (2000×2000)</span>
-                    <div class="preview-image-wrapper checkerboard-bg" id="outputPreviewWrapper">
-                        <canvas id="outputPreviewCanvas" width="280" height="280"></canvas>
-                    </div>
-                    <p class="preview-resolution">2000 × 2000 px</p>
-                </div>
+        <!-- بخش لینک مستقیم -->
+        <div class="url-section">
+            <label>لینک مستقیم تصویر:</label>
+            <input type="url" id="urlInput" placeholder="https://example.com/image.jpg" dir="ltr">
+            <button id="loadUrlBtn">بارگذاری از لینک</button>
+        </div>
+
+        <!-- پنل تنظیمات رزولوشن (نمایش رزولوشن اولیه + تنظیم سفارشی) -->
+        <div class="resolution-panel" id="resolutionPanel" style="display: none;">
+            <!-- نمایش رزولوشن اولیه تصویر (بدون نمایش خود عکس) -->
+            <div class="initial-res-info" id="initialResDisplay">
+                <span>📐 رزولوشن اولیه:</span>
+                <span id="initialResValue">-</span>
             </div>
 
-            <!-- Info bar -->
-            <div class="info-bar">
-                <div class="info-item">
-                    <span class="info-label">Original</span>
-                    <span class="info-value" id="infoOrigRes">—</span>
+            <!-- بخش رزولوشن سفارشی -->
+            <div class="custom-res-title">⚙️ تنظیم رزولوشن خروجی</div>
+            <div class="resolution-inputs">
+                <div class="input-group">
+                    <label>عرض:</label>
+                    <input type="number" id="widthInput" min="1" step="1" placeholder="2000">
                 </div>
-                <div class="info-arrow">→</div>
-                <div class="info-item">
-                    <span class="info-label">Output</span>
-                    <span class="info-value">2000 × 2000 px</span>
+                <div class="input-group">
+                    <label>ارتفاع:</label>
+                    <input type="number" id="heightInput" min="1" step="1" placeholder="2000">
                 </div>
+                <!-- دکمه قفل نسبت تصویر (پیش‌فرض فعال) -->
+                <div class="lock-icon locked" id="lockAspectBtn" title="حفظ نسبت تصویر (فعال)">🔒</div>
             </div>
+            <button class="apply-btn" id="applyResBtn">اعمال رزولوشن سفارشی</button>
+            <div class="output-res-info" id="currentOutResolution">رزولوشن خروجی: -</div>
+        </div>
 
-            <!-- Download button -->
-            <button class="btn-download" id="btnDownload" type="button">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/>
-                    <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                Download PNG
-            </button>
+        <!-- بخش خروجی و دانلود -->
+        <div class="output-section" id="outputSection" style="display: none;">
+            <h3 style="color:#1e2a3a; font-weight:700;">🖼️ پیش‌نمایش خروجی</h3>
+            <div class="output-preview-box" id="outputPreviewBox">
+                <img id="outputPreview" src="" alt="پیش‌نمایش تصویر خروجی">
+            </div>
+            <!-- انتخاب فرمت خروجی -->
+            <div class="format-selection">
+                <label>فرمت خروجی:</label>
+                <select id="formatSelect">
+                    <option value="image/png">PNG (کیفیت بالا)</option>
+                    <option value="image/jpeg">JPG (کیفیت 92%)</option>
+                </select>
+            </div>
+            <!-- دکمه دانلود -->
+            <button class="download-btn" id="downloadBtn" disabled>⬇️ دانلود تصویر نهایی</button>
         </div>
     </div>
 
-    <!-- Error toast -->
-    <div class="error-toast" id="errorToast"></div>
+    <!-- ========== بخش Made by Abbas (خارج از کادر اصلی، پایین صفحه) ========== -->
+    <div class="creator-outside">
+        <span>ساخته شده توسط</span>
+        <a href="#" class="creator-link" id="creatorLink" target="_blank" rel="noopener">Made by Abbas</a>
+    </div>
+
+    <!-- فوتر -->
+    <div class="footer">
+        <div>© <span id="currentYear"></span> - تمامی حقوق محفوظ است</div>
+        <div><strong>Made by Abbas</strong> — ابزار آنلاین تغییر رزولوشن تصویر</div>
+        <div class="footer-desc">پشتیبانی از فرمت‌های JPG، PNG، WEBP، GIF، BMP و TIFF</div>
+    </div>
 
     <script>
+        // =============================================
+        // JavaScript اصلی برنامه - مدیریت تمام عملکردها
+        // نسخه اصلاح‌شده: بدون نمایش پیش‌نمایش اولیه،
+        // فونت وزیرمتن، دکمه ساده، Made by Abbas بیرون کادر
+        // =============================================
+
         (function() {
-            // DOM Elements
+            // ---------- متغیرهای سراسری ----------
+            let originalImage = null; // شیء Image اصلی (دست‌نخورده)
+            let currentOutputBlob = null; // باینری تصویر خروجی نهایی
+            let originalWidth = 0; // عرض اصلی تصویر
+            let originalHeight = 0; // ارتفاع اصلی تصویر
+            let lockAspect = true; // وضعیت قفل نسبت تصویر (پیش‌فرض فعال)
+            const DEFAULT_RES = 2000; // رزولوشن پیش‌فرض 2000x2000
+
+            // لینک سازنده (قابل تغییر)
+            const CREATOR_LINK = "https://YOUR-LINK-HERE";
+
+            // ---------- ارجاع به عناصر DOM ----------
             const uploadArea = document.getElementById('uploadArea');
             const fileInput = document.getElementById('fileInput');
-            const previewSection = document.getElementById('previewSection');
-            const originalPreviewImg = document.getElementById('originalPreviewImg');
-            const noOriginalPlaceholder = document.getElementById('noOriginalPlaceholder');
-            const originalResolution = document.getElementById('originalResolution');
-            const outputPreviewCanvas = document.getElementById('outputPreviewCanvas');
-            const outputPreviewWrapper = document.getElementById('outputPreviewWrapper');
-            const infoOrigRes = document.getElementById('infoOrigRes');
-            const btnDownload = document.getElementById('btnDownload');
-            const errorToast = document.getElementById('errorToast');
-            const originalPreviewWrapper = document.getElementById('originalPreviewWrapper');
+            const urlInput = document.getElementById('urlInput');
+            const loadUrlBtn = document.getElementById('loadUrlBtn');
+            const resolutionPanel = document.getElementById('resolutionPanel');
+            const initialResValue = document.getElementById('initialResValue');
+            const widthInput = document.getElementById('widthInput');
+            const heightInput = document.getElementById('heightInput');
+            const lockAspectBtn = document.getElementById('lockAspectBtn');
+            const applyResBtn = document.getElementById('applyResBtn');
+            const currentOutResolution = document.getElementById('currentOutResolution');
+            const outputSection = document.getElementById('outputSection');
+            const outputPreview = document.getElementById('outputPreview');
+            const formatSelect = document.getElementById('formatSelect');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const creatorLink = document.getElementById('creatorLink');
+            const currentYearSpan = document.getElementById('currentYear');
 
-            // State
-            let currentImage = null;
-            let currentOriginalWidth = 0;
-            let currentOriginalHeight = 0;
-            let mainCanvas = null; // The 2000×2000 output canvas (not in DOM)
-            let errorToastTimer = null;
+            // تنظیم لینک سازنده و سال
+            creatorLink.href = CREATOR_LINK;
+            currentYearSpan.textContent = new Date().getFullYear();
 
-            // Create the main 2000×2000 canvas (offscreen, never added to DOM)
-            function createMainCanvas() {
+            // ---------- توابع کمکی ----------
+
+            function readFileAsDataURL(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = () => reject(new Error('خطا در خواندن فایل'));
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            function loadImageFromSrc(src) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = "Anonymous";
+                    img.onload = () => resolve(img);
+                    img.onerror = () => reject(new Error('خطا در بارگذاری تصویر. لینک معتبر نیست یا دسترسی محدود است.'));
+                    img.src = src;
+                });
+            }
+
+            /**
+             * تغییر اندازه تصویر با کیفیت بالا (Canvas)
+             */
+            function resizeImageHighQuality(sourceImg, targetWidth, targetHeight) {
                 const canvas = document.createElement('canvas');
-                canvas.width = 2000;
-                canvas.height = 2000;
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(sourceImg, 0, 0, targetWidth, targetHeight);
                 return canvas;
             }
 
-            // Initialize main canvas
-            mainCanvas = createMainCanvas();
-
-            // Show error toast
-            function showError(message) {
-                if (errorToastTimer) clearTimeout(errorToastTimer);
-                errorToast.textContent = message;
-                errorToast.classList.add('show');
-                errorToastTimer = setTimeout(() => {
-                    errorToast.classList.remove('show');
-                }, 2800);
+            function canvasToBlob(canvas, format, quality = 0.92) {
+                return new Promise((resolve, reject) => {
+                    canvas.toBlob((blob) => {
+                        if (blob) resolve(blob);
+                        else reject(new Error('خطا در ایجاد خروجی تصویر'));
+                    }, format, quality);
+                });
             }
 
-            // Draw the output on the main 2000×2000 canvas
-            function drawOutput(image) {
-                const canvas = mainCanvas;
-                const ctx = canvas.getContext('2d');
+            /**
+             * پردازش اولیه: تبدیل به رزولوشن 2000x2000 (با حفظ نسبت)
+             */
+            async function processDefaultResolution(img) {
+                originalWidth = img.width;
+                originalHeight = img.height;
 
-                // Clear canvas (transparent)
-                ctx.clearRect(0, 0, 2000, 2000);
+                // نمایش رزولوشن اولیه در پنل (بدون نمایش عکس)
+                initialResValue.textContent = `${originalWidth} × ${originalHeight}`;
+                resolutionPanel.style.display = 'flex';
 
-                // Enable high-quality smoothing
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = 'high';
+                // محاسبه ابعاد متناسب با 2000
+                let targetW, targetH;
+                const ratio = originalWidth / originalHeight;
+                if (originalWidth >= originalHeight) {
+                    targetW = DEFAULT_RES;
+                    targetH = Math.round(DEFAULT_RES / ratio);
+                } else {
+                    targetH = DEFAULT_RES;
+                    targetW = Math.round(DEFAULT_RES * ratio);
+                }
 
-                const origW = image.naturalWidth;
-                const origH = image.naturalHeight;
+                // به‌روزرسانی ورودی‌های رزولوشن سفارشی
+                widthInput.value = targetW;
+                heightInput.value = targetH;
+                currentOutResolution.textContent = `رزولوشن خروجی: ${targetW} × ${targetH}`;
 
-                if (origW === 0 || origH === 0) return;
+                // ایجاد خروجی
+                const canvas = resizeImageHighQuality(img, targetW, targetH);
+                outputPreview.src = canvas.toDataURL('image/png');
+                outputSection.style.display = 'flex';
+                downloadBtn.disabled = false;
 
-                // Calculate scale to fit within 2000×2000 while preserving aspect ratio
-                const scale = Math.min(2000 / origW, 2000 / origH);
-                const scaledW = Math.round(origW * scale);
-                const scaledH = Math.round(origH * scale);
-
-                // Center the image
-                const offsetX = Math.round((2000 - scaledW) / 2);
-                const offsetY = Math.round((2000 - scaledH) / 2);
-
-                // Draw image centered with scaling
-                ctx.drawImage(image, offsetX, offsetY, scaledW, scaledH);
+                // ذخیره برای دانلود
+                currentOutputBlob = await canvasToBlob(canvas, 'image/png');
             }
 
-            // Draw the preview on the small preview canvas
-            function drawPreview(image) {
-                const previewCanvas = outputPreviewCanvas;
-                const ctx = previewCanvas.getContext('2d');
-                const previewSize = 280;
-
-                // Clear preview canvas (transparent)
-                ctx.clearRect(0, 0, previewSize, previewSize);
-
-                // Enable high-quality smoothing for preview too
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = 'high';
-
-                const origW = image.naturalWidth;
-                const origH = image.naturalHeight;
-
-                if (origW === 0 || origH === 0) return;
-
-                // Same scale logic but for preview size
-                const scale = Math.min(previewSize / origW, previewSize / origH);
-                const scaledW = Math.round(origW * scale);
-                const scaledH = Math.round(origH * scale);
-
-                const offsetX = Math.round((previewSize - scaledW) / 2);
-                const offsetY = Math.round((previewSize - scaledH) / 2);
-
-                ctx.drawImage(image, offsetX, offsetY, scaledW, scaledH);
+            /**
+             * مدیریت ورود تصویر جدید
+             */
+            async function handleNewImage(img) {
+                originalImage = img;
+                await processDefaultResolution(img);
             }
 
-            // Update the entire UI after an image is loaded
-            function updateUI(image) {
-                currentImage = image;
-                currentOriginalWidth = image.naturalWidth;
-                currentOriginalHeight = image.naturalHeight;
+            /**
+             * اعمال رزولوشن سفارشی
+             */
+            async function applyCustomResolution() {
+                if (!originalImage) {
+                    alert('لطفاً ابتدا یک تصویر وارد کنید.');
+                    return;
+                }
+                let newWidth = parseInt(widthInput.value);
+                let newHeight = parseInt(heightInput.value);
 
-                // Draw on main canvas
-                drawOutput(image);
-
-                // Draw preview
-                drawPreview(image);
-
-                // Show original preview
-                originalPreviewImg.src = image.src;
-                originalPreviewImg.style.display = 'block';
-                noOriginalPlaceholder.style.display = 'none';
-
-                // Update resolution text
-                const origResText = `${currentOriginalWidth} × ${currentOriginalHeight} px`;
-                originalResolution.innerHTML = `<span>${origResText}</span>`;
-                infoOrigRes.textContent = origResText;
-
-                // Show preview section
-                previewSection.classList.add('visible');
-
-                // Update upload area style
-                uploadArea.classList.add('has-image');
-
-                // Adjust output preview canvas size to fill wrapper nicely
-                const wrapperWidth = outputPreviewWrapper.clientWidth;
-                const displaySize = Math.min(wrapperWidth - 8, 280);
-                outputPreviewCanvas.style.width = displaySize + 'px';
-                outputPreviewCanvas.style.height = displaySize + 'px';
-            }
-
-            // Process a file and load it as an image
-            function processFile(file) {
-                if (!file) return;
-
-                // Validate file type
-                const validTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml'];
-                if (!validTypes.includes(file.type) && !file.name.match(/\.(png|jpe?g|gif|webp|bmp|svg)$/i)) {
-                    showError('Please provide a valid image file (PNG, JPEG, GIF, WebP, BMP, SVG).');
+                if (isNaN(newWidth) || newWidth <= 0) {
+                    newWidth = parseInt(widthInput.placeholder) || DEFAULT_RES;
+                    widthInput.value = newWidth;
+                }
+                if (isNaN(newHeight) || newHeight <= 0) {
+                    newHeight = parseInt(heightInput.placeholder) || DEFAULT_RES;
+                    heightInput.value = newHeight;
+                }
+                if (newWidth > 8000 || newHeight > 8000) {
+                    alert('حداکثر رزولوشن مجاز 8000×8000 پیکسل می‌باشد.');
                     return;
                 }
 
-                const url = URL.createObjectURL(file);
-                const img = new Image();
+                const canvas = resizeImageHighQuality(originalImage, newWidth, newHeight);
+                outputPreview.src = canvas.toDataURL('image/png');
+                currentOutResolution.textContent = `رزولوشن خروجی: ${newWidth} × ${newHeight}`;
 
-                img.onload = function() {
-                    URL.revokeObjectURL(url);
-                    updateUI(img);
-                };
-
-                img.onerror = function() {
-                    URL.revokeObjectURL(url);
-                    showError('Failed to load image. The file may be corrupted or unsupported.');
-                };
-
-                img.src = url;
+                const selectedFormat = formatSelect.value;
+                currentOutputBlob = await canvasToBlob(canvas, selectedFormat, 0.92);
+                downloadBtn.disabled = false;
             }
 
-            // Handle file input change (click to choose)
-            fileInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    processFile(file);
-                }
-                // Reset so the same file can be chosen again
-                fileInput.value = '';
-            });
-
-            // Click on upload area triggers file input
-            uploadArea.addEventListener('click', function(e) {
-                // Don't trigger if user clicked on a child that might have its own handler
-                fileInput.click();
-            });
-
-            // Drag & Drop handlers
-            uploadArea.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                uploadArea.classList.add('drag-over');
-            });
-
-            uploadArea.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                uploadArea.classList.remove('drag-over');
-            });
-
-            uploadArea.addEventListener('drop', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                uploadArea.classList.remove('drag-over');
-
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    const file = files[0];
-                    processFile(file);
-                }
-            });
-
-            // Also handle drag over the entire document to prevent default browser behavior
-            document.addEventListener('dragover', function(e) {
-                if (e.target === uploadArea || uploadArea.contains(e.target)) {
-                    // Already handled by uploadArea listeners
+            function downloadOutput() {
+                if (!currentOutputBlob) {
+                    alert('ابتدا تصویری پردازش کنید.');
                     return;
                 }
-                // Prevent default to avoid browser opening the file
-                e.preventDefault();
-            });
+                const url = URL.createObjectURL(currentOutputBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                const format = formatSelect.value;
+                const ext = format === 'image/png' ? 'png' : 'jpg';
+                a.download = `resized_${Date.now()}.${ext}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
 
-            document.addEventListener('drop', function(e) {
-                // Prevent default for drops outside the upload area too
-                if (e.target === uploadArea || uploadArea.contains(e.target)) {
-                    return;
-                }
-                e.preventDefault();
-            });
+            // ---------- Event Listeners ----------
 
-            // Paste handler (Ctrl+V)
-            document.addEventListener('paste', function(e) {
-                // Don't intercept paste if user is in an input field (not applicable here, but safe)
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
-                    return;
-                }
-
-                const clipboardData = e.clipboardData;
-                if (!clipboardData || !clipboardData.items) return;
-
-                // Look for image items
-                let imageFile = null;
-                for (let i = 0; i < clipboardData.items.length; i++) {
-                    const item = clipboardData.items[i];
-                    if (item.type.startsWith('image/')) {
-                        imageFile = item.getAsFile();
-                        break;
-                    }
-                }
-
-                // Fallback: check files in clipboard
-                if (!imageFile && clipboardData.files && clipboardData.files.length > 0) {
-                    const firstFile = clipboardData.files[0];
-                    if (firstFile.type.startsWith('image/')) {
-                        imageFile = firstFile;
-                    }
-                }
-
-                if (imageFile) {
-                    e.preventDefault(); // Prevent default paste behavior
-                    processFile(imageFile);
-                }
-            });
-
-            // Download button handler
-            btnDownload.addEventListener('click', function() {
-                if (!currentImage) {
-                    showError('No image loaded. Please upload or paste an image first.');
-                    return;
-                }
-
-                // Re-draw to ensure canvas is fresh
-                drawOutput(currentImage);
-
-                // Convert to blob and download
-                mainCanvas.toBlob(function(blob) {
-                    if (!blob) {
-                        showError('Failed to generate PNG. Please try again.');
-                        return;
-                    }
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'upscaled-2000x2000.png';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    // Revoke after a short delay to ensure download starts
-                    setTimeout(function() {
-                        URL.revokeObjectURL(url);
-                    }, 200);
-                }, 'image/png');
-            });
-
-            // Handle keyboard activation of upload area (Enter/Space)
-            uploadArea.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
+            // 1) کلیک روی ناحیه آپلود (باز کردن فایل)
+            uploadArea.addEventListener('click', (e) => {
+                if (e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') {
                     fileInput.click();
                 }
             });
 
-            // Handle window resize to adjust preview canvas display size
-            function handleResize() {
-                if (outputPreviewWrapper && outputPreviewCanvas) {
-                    const wrapperWidth = outputPreviewWrapper.clientWidth;
-                    const displaySize = Math.min(wrapperWidth - 8, 280);
-                    outputPreviewCanvas.style.width = displaySize + 'px';
-                    outputPreviewCanvas.style.height = displaySize + 'px';
+            // 2) انتخاب فایل
+            fileInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                try {
+                    const dataUrl = await readFileAsDataURL(file);
+                    const img = await loadImageFromSrc(dataUrl);
+                    await handleNewImage(img);
+                } catch (err) {
+                    alert('خطا: ' + err.message);
                 }
-            }
-            window.addEventListener('resize', handleResize);
+                fileInput.value = '';
+            });
 
-            // Initial setup: ensure preview is hidden
-            previewSection.classList.remove('visible');
-            originalPreviewImg.style.display = 'none';
-            noOriginalPlaceholder.style.display = 'block';
-            outputPreviewCanvas.style.width = '280px';
-            outputPreviewCanvas.style.height = '280px';
+            // 3) درگ‌اند‌دراپ
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            uploadArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+            uploadArea.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (!files.length) return;
+                const file = files[0];
+                if (!file.type.startsWith('image/')) {
+                    alert('فقط فایل تصویری مجاز است.');
+                    return;
+                }
+                try {
+                    const dataUrl = await readFileAsDataURL(file);
+                    const img = await loadImageFromSrc(dataUrl);
+                    await handleNewImage(img);
+                } catch (err) {
+                    alert('خطا: ' + err.message);
+                }
+            });
 
-            // Clear the preview canvas initially
-            const initCtx = outputPreviewCanvas.getContext('2d');
-            initCtx.clearRect(0, 0, 280, 280);
+            // 4) Paste از کلیپبورد
+            document.addEventListener('paste', async (e) => {
+                const items = e.clipboardData?.items;
+                if (!items) return;
+                for (let item of items) {
+                    if (item.type.indexOf('image') !== -1) {
+                        e.preventDefault();
+                        const file = item.getAsFile();
+                        try {
+                            const dataUrl = await readFileAsDataURL(file);
+                            const img = await loadImageFromSrc(dataUrl);
+                            await handleNewImage(img);
+                        } catch (err) {
+                            alert('خطا در بارگذاری از کلیپبورد: ' + err.message);
+                        }
+                        break;
+                    }
+                }
+            });
 
-            console.log('✅ Image Upscaler ready. Drop, click, or paste (Ctrl+V) an image to begin.');
-            console.log('   Output: 2000×2000 PNG with transparent padding, aspect ratio preserved.');
-            console.log('   All processing is local — no uploads, no server, no internet.');
+            // 5) لینک مستقیم
+            loadUrlBtn.addEventListener('click', async () => {
+                const url = urlInput.value.trim();
+                if (!url) {
+                    alert('لینک تصویر را وارد کنید.');
+                    return;
+                }
+                try {
+                    const img = await loadImageFromSrc(url);
+                    await handleNewImage(img);
+                } catch (err) {
+                    alert('خطا: ' + err.message);
+                }
+            });
+
+            // 6) قفل نسبت تصویر
+            lockAspectBtn.addEventListener('click', () => {
+                lockAspect = !lockAspect;
+                if (lockAspect) {
+                    lockAspectBtn.classList.add('locked');
+                    lockAspectBtn.textContent = '🔒';
+                    lockAspectBtn.title = 'حفظ نسبت تصویر (فعال)';
+                    if (originalWidth && originalHeight) {
+                        const ratio = originalWidth / originalHeight;
+                        const curWidth = parseInt(widthInput.value) || originalWidth;
+                        heightInput.value = Math.round(curWidth / ratio);
+                    }
+                } else {
+                    lockAspectBtn.classList.remove('locked');
+                    lockAspectBtn.textContent = '🔓';
+                    lockAspectBtn.title = 'حفظ نسبت تصویر (غیرفعال)';
+                }
+            });
+
+            // همگام‌سازی ابعاد با قفل
+            widthInput.addEventListener('input', () => {
+                if (lockAspect && originalWidth && originalHeight) {
+                    const ratio = originalWidth / originalHeight;
+                    const newWidth = parseInt(widthInput.value);
+                    if (!isNaN(newWidth) && newWidth > 0) {
+                        heightInput.value = Math.round(newWidth / ratio);
+                    }
+                }
+            });
+
+            heightInput.addEventListener('input', () => {
+                if (lockAspect && originalWidth && originalHeight) {
+                    const ratio = originalWidth / originalHeight;
+                    const newHeight = parseInt(heightInput.value);
+                    if (!isNaN(newHeight) && newHeight > 0) {
+                        widthInput.value = Math.round(newHeight * ratio);
+                    }
+                }
+            });
+
+            // 7) اعمال رزولوشن سفارشی
+            applyResBtn.addEventListener('click', applyCustomResolution);
+
+            // 8) تغییر فرمت (بروزرسانی Blob)
+            formatSelect.addEventListener('change', async () => {
+                if (!originalImage) return;
+                const curW = parseInt(widthInput.value) || DEFAULT_RES;
+                const curH = parseInt(heightInput.value) || DEFAULT_RES;
+                const canvas = resizeImageHighQuality(originalImage, curW, curH);
+                const selectedFormat = formatSelect.value;
+                currentOutputBlob = await canvasToBlob(canvas, selectedFormat, 0.92);
+                outputPreview.src = canvas.toDataURL(selectedFormat, 0.92);
+            });
+
+            // 9) دانلود
+            downloadBtn.addEventListener('click', downloadOutput);
+
+            // مخفی‌سازی اولیه
+            resolutionPanel.style.display = 'none';
+            outputSection.style.display = 'none';
+
+            console.log('✅ ابزار تغییر رزولوشن (نسخه اصلاح‌شده) آماده است.');
         })();
     </script>
 </body>
