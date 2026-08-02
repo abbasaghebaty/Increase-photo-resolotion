@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upscaler – 2000×2000</title>
+    <style>
+        :root {
+            --bg: #f8f9fb;
+            --surface: #ffffff;
+            --border: #e2e5ea;
+            --text: #1a1d23;
+            --text-secondary: #5f6368;
+            --accent: #3b6df0;
+            --accent-hover: #2851d1;
+            --accent-light: #eef3ff;
+            --danger: #d93025;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08), 0 16px 48px rgba(0, 0, 0, 0.06);
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 780px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        /* Header */
+        .app-header {
+            text-align: center;
+        }
+        .app-header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .app-header .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            position: relative;
+            background: var(--surface);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 52px 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            user-select: none;
+            -webkit-user-select: none;
+            outline: none;
+        }
+        .upload-area:hover {
+            border-color: #c4c9d4;
+            background: #fafbfc;
+            box-shadow: var(--shadow-card);
+        }
+        .upload-area.drag-over {
+            border-color: var(--accent);
+            background: var(--accent-light);
+            box-shadow: 0 0 0 8px rgba(59, 109, 240, 0.06);
+            transform: scale(1.01);
+        }
+        .upload-area.has-image {
+            padding: 28px 32px;
+            border-style: solid;
+            border-color: var(--border);
+            background: #fafbfc;
+        }
+        .upload-icon {
+            display: block;
+            margin: 0 auto 16px;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition);
+        }
+        .upload-area.drag-over .upload-icon {
+            background: #d6e2ff;
+            transform: translateY(-2px);
+        }
+        .upload-icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--accent);
+        }
+        .upload-text {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+            letter-spacing: -0.01em;
+        }
+        .upload-hint {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .upload-area.has-image .upload-text {
+            font-size: 0.95rem;
+        }
+        .upload-area.has-image .upload-icon {
+            width: 38px;
+            height: 38px;
+        }
+        .upload-area.has-image .upload-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Preview Section */
+        .preview-section {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .preview-section.visible {
+            display: flex;
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .preview-grid {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .preview-card {
+            flex: 1;
+            min-width: 260px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+        .preview-card-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+        .preview-image-wrapper {
+            width: 100%;
+            max-width: 300px;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: #f1f2f4;
+            position: relative;
+        }
+        .preview-image-wrapper img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: var(--radius-sm);
+        }
+
+        /* Checkerboard for transparency preview */
+        .checkerboard-bg {
+            background-image:
+                linear-gradient(45deg, #e8e8e8 25%, transparent 25%),
+                linear-gradient(-45deg, #e8e8e8 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #e8e8e8 75%),
+                linear-gradient(-45deg, transparent 75%, #e8e8e8 75%);
+            background-size: 18px 18px;
+            background-position: 0 0, 0 9px, 9px -9px, -9px 0px;
+            border-radius: var(--radius-sm);
+        }
+        .preview-image-wrapper.checkerboard-bg {
+            background-color: #fafafa;
+        }
+        .preview-image-wrapper canvas {
+            display: block;
+            border-radius: var(--radius-sm);
+            position: relative;
+            z-index: 1;
+        }
+
+        .preview-resolution {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-align: center;
+            letter-spacing: -0.01em;
+        }
+        .preview-resolution span {
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* Info bar */
+        .info-bar {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 18px 28px;
+            box-shadow: var(--shadow-card);
+        }
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .info-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-secondary);
+        }
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.01em;
+        }
+        .info-arrow {
+            display: flex;
+            align-items: center;
+            color: var(--accent);
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        /* Download Button */
+        .btn-download {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 16px 28px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: #fff;
+            background: var(--accent);
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all var(--transition);
+            box-shadow: 0 2px 8px rgba(59, 109, 240, 0.25);
+            font-family: inherit;
+        }
+        .btn-download:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 6px 20px rgba(59, 109, 240, 0.35);
+            transform: translateY(-1px);
+        }
+        .btn-download:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 4px rgba(59, 109, 240, 0.2);
+        }
+        .btn-download svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Error toast */
+        .error-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-120px);
+            background: #fef2f2;
+            color: var(--danger);
+            border: 1px solid #fecaca;
+            padding: 12px 22px;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            z-index: 100;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(217, 48, 37, 0.12);
+        }
+        .error-toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            body {
+                padding: 16px;
+            }
+            .upload-area {
+                padding: 36px 20px;
+            }
+            .upload-area.has-image {
+                padding: 20px 16px;
+            }
+            .upload-text {
+                font-size: 0.95rem;
+            }
+            .preview-grid {
+                flex-direction: column;
+            }
+            .preview-card {
+                min-width: auto;
+            }
+            .info-bar {
+                gap: 14px;
+                padding: 14px 18px;
+            }
+            .info-value {
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>Image Upscaler</h1>
+            <p class="subtitle">Resize any image to 2000×2000 pixels with transparent padding</p>
+        </header>
+
+        <!-- Upload Area -->
+        <div class="upload-area" id="uploadArea" tabindex="0" role="button" aria-label="Upload image">
+            <div class="upload-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+            </div>
+            <p class="upload-text">Drop image here or click / Paste (Ctrl+V)</p>
+            <p class="upload-hint">Supports PNG, JPEG, GIF, WebP, BMP, SVG</p>
+        </div>
+
+        <!-- Hidden file input -->
+        <input type="file" id="fileInput" accept="image/*" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;" />
+
+        <!-- Preview Section -->
+        <div class="preview-section" id="previewSection">
+            <div class="preview-grid">
+                <!-- Original preview -->
+                <div class="preview-card">
+                    <span class="preview-card-label">Original</span>
+                    <div class="preview-image-wrapper" id="originalPreviewWrapper">
+                        <img id="originalPreviewImg" src="" alt="Original image preview" style="display:none;" />
+                        <span id="noOriginalPlaceholder" style="color:#9aa0a8;font-size:0.85rem;">—</span>
+                    </div>
+                    <p class="preview-resolution" id="originalResolution">—</p>
+                </div>
+                <!-- Output preview -->
+                <div class="preview-card">
+                    <span class="preview-card-label">Output (2000×2000)</span>
+                    <div class="preview-image-wrapper checkerboard-bg" id="outputPreviewWrapper">
+                        <canvas id="outputPreviewCanvas" width="280" height="280"></canvas>
+                    </div>
+                    <p class="preview-resolution">2000 × 2000 px</p>
+                </div>
+            </div>
+
+            <!-- Info bar -->
+            <div class="info-bar">
+                <div class="info-item">
+                    <span class="info-label">Original</span>
+                    <span class="info-value" id="infoOrigRes">—</span>
+                </div>
+                <div class="info-arrow">→</div>
+                <div class="info-item">
+                    <span class="info-label">Output</span>
+                    <span class="info-value">2000 × 2000 px</span>
+                </div>
+            </div>
+
+            <!-- Download button -->
+            <button class="btn-download" id="btnDownload" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download PNG
+            </button>
+        </div>
+    </div>
+
+    <!-- Error toast -->
+    <div class="error-toast" id="errorToast"></div>
+
+    <script>
+        (function() {
+            // DOM Elements
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const previewSection = document.getElementById('previewSection');
+            const originalPreviewImg = document.getElementById('originalPreviewImg');
+            const noOriginalPlaceholder = document.getElementById('noOriginalPlaceholder');
+            const originalResolution = document.getElementById('originalResolution');
+            const outputPreviewCanvas = document.getElementById('outputPreviewCanvas');
+            const outputPreviewWrapper = document.getElementById('outputPreviewWrapper');
+            const infoOrigRes = document.getElementById('infoOrigRes');
+            const btnDownload = document.getElementById('btnDownload');
+            const errorToast = document.getElementById('errorToast');
+            const originalPreviewWrapper = document.getElementById('originalPreviewWrapper');
+
+            // State
+            let currentImage = null;
+            let currentOriginalWidth = 0;
+            let currentOriginalHeight = 0;
+            let mainCanvas = null; // The 2000×2000 output canvas (not in DOM)
+            let errorToastTimer = null;
+
+            // Create the main 2000×2000 canvas (offscreen, never added to DOM)
+            function createMainCanvas() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 2000;
+                canvas.height = 2000;
+                return canvas;
+            }
+
+            // Initialize main canvas
+            mainCanvas = createMainCanvas();
+
+            // Show error toast
+            function showError(message) {
+                if (errorToastTimer) clearTimeout(errorToastTimer);
+                errorToast.textContent = message;
+                errorToast.classList.add('show');
+                errorToastTimer = setTimeout(() => {
+                    errorToast.classList.remove('show');
+                }, 2800);
+            }
+
+            // Draw the output on the main 2000×2000 canvas
+            function drawOutput(image) {
+                const canvas = mainCanvas;
+                const ctx = canvas.getContext('2d');
+
+                // Clear canvas (transparent)
+                ctx.clearRect(0, 0, 2000, 2000);
+
+                // Enable high-quality smoothing
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+
+                const origW = image.naturalWidth;
+                const origH = image.naturalHeight;
+
+                if (origW === 0 || origH === 0) return;
+
+                // Calculate scale to fit within 2000×2000 while preserving aspect ratio
+                const scale = Math.min(2000 / origW, 2000 / origH);
+                const scaledW = Math.round(origW * scale);
+                const scaledH = Math.round(origH * scale);
+
+                // Center the image
+                const offsetX = Math.round((2000 - scaledW) / 2);
+                const offsetY = Math.round((2000 - scaledH) / 2);
+
+                // Draw image centered with scaling
+                ctx.drawImage(image, offsetX, offsetY, scaledW, scaledH);
+            }
+
+            // Draw the preview on the small preview canvas
+            function drawPreview(image) {
+                const previewCanvas = outputPreviewCanvas;
+                const ctx = previewCanvas.getContext('2d');
+                const previewSize = 280;
+
+                // Clear preview canvas (transparent)
+                ctx.clearRect(0, 0, previewSize, previewSize);
+
+                // Enable high-quality smoothing for preview too
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+
+                const origW = image.naturalWidth;
+                const origH = image.naturalHeight;
+
+                if (origW === 0 || origH === 0) return;
+
+                // Same scale logic but for preview size
+                const scale = Math.min(previewSize / origW, previewSize / origH);
+                const scaledW = Math.round(origW * scale);
+                const scaledH = Math.round(origH * scale);
+
+                const offsetX = Math.round((previewSize - scaledW) / 2);
+                const offsetY = Math.round((previewSize - scaledH) / 2);
+
+                ctx.drawImage(image, offsetX, offsetY, scaledW, scaledH);
+            }
+
+            // Update the entire UI after an image is loaded
+            function updateUI(image) {
+                currentImage = image;
+                currentOriginalWidth = image.naturalWidth;
+                currentOriginalHeight = image.naturalHeight;
+
+                // Draw on main canvas
+                drawOutput(image);
+
+                // Draw preview
+                drawPreview(image);
+
+                // Show original preview
+                originalPreviewImg.src = image.src;
+                originalPreviewImg.style.display = 'block';
+                noOriginalPlaceholder.style.display = 'none';
+
+                // Update resolution text
+                const origResText = `${currentOriginalWidth} × ${currentOriginalHeight} px`;
+                originalResolution.innerHTML = `<span>${origResText}</span>`;
+                infoOrigRes.textContent = origResText;
+
+                // Show preview section
+                previewSection.classList.add('visible');
+
+                // Update upload area style
+                uploadArea.classList.add('has-image');
+
+                // Adjust output preview canvas size to fill wrapper nicely
+                const wrapperWidth = outputPreviewWrapper.clientWidth;
+                const displaySize = Math.min(wrapperWidth - 8, 280);
+                outputPreviewCanvas.style.width = displaySize + 'px';
+                outputPreviewCanvas.style.height = displaySize + 'px';
+            }
+
+            // Process a file and load it as an image
+            function processFile(file) {
+                if (!file) return;
+
+                // Validate file type
+                const validTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml'];
+                if (!validTypes.includes(file.type) && !file.name.match(/\.(png|jpe?g|gif|webp|bmp|svg)$/i)) {
+                    showError('Please provide a valid image file (PNG, JPEG, GIF, WebP, BMP, SVG).');
+                    return;
+                }
+
+                const url = URL.createObjectURL(file);
+                const img = new Image();
+
+                img.onload = function() {
+                    URL.revokeObjectURL(url);
+                    updateUI(img);
+                };
+
+                img.onerror = function() {
+                    URL.revokeObjectURL(url);
+                    showError('Failed to load image. The file may be corrupted or unsupported.');
+                };
+
+                img.src = url;
+            }
+
+            // Handle file input change (click to choose)
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    processFile(file);
+                }
+                // Reset so the same file can be chosen again
+                fileInput.value = '';
+            });
+
+            // Click on upload area triggers file input
+            uploadArea.addEventListener('click', function(e) {
+                // Don't trigger if user clicked on a child that might have its own handler
+                fileInput.click();
+            });
+
+            // Drag & Drop handlers
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.classList.add('drag-over');
+            });
+
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.classList.remove('drag-over');
+            });
+
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.classList.remove('drag-over');
+
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    processFile(file);
+                }
+            });
+
+            // Also handle drag over the entire document to prevent default browser behavior
+            document.addEventListener('dragover', function(e) {
+                if (e.target === uploadArea || uploadArea.contains(e.target)) {
+                    // Already handled by uploadArea listeners
+                    return;
+                }
+                // Prevent default to avoid browser opening the file
+                e.preventDefault();
+            });
+
+            document.addEventListener('drop', function(e) {
+                // Prevent default for drops outside the upload area too
+                if (e.target === uploadArea || uploadArea.contains(e.target)) {
+                    return;
+                }
+                e.preventDefault();
+            });
+
+            // Paste handler (Ctrl+V)
+            document.addEventListener('paste', function(e) {
+                // Don't intercept paste if user is in an input field (not applicable here, but safe)
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+                    return;
+                }
+
+                const clipboardData = e.clipboardData;
+                if (!clipboardData || !clipboardData.items) return;
+
+                // Look for image items
+                let imageFile = null;
+                for (let i = 0; i < clipboardData.items.length; i++) {
+                    const item = clipboardData.items[i];
+                    if (item.type.startsWith('image/')) {
+                        imageFile = item.getAsFile();
+                        break;
+                    }
+                }
+
+                // Fallback: check files in clipboard
+                if (!imageFile && clipboardData.files && clipboardData.files.length > 0) {
+                    const firstFile = clipboardData.files[0];
+                    if (firstFile.type.startsWith('image/')) {
+                        imageFile = firstFile;
+                    }
+                }
+
+                if (imageFile) {
+                    e.preventDefault(); // Prevent default paste behavior
+                    processFile(imageFile);
+                }
+            });
+
+            // Download button handler
+            btnDownload.addEventListener('click', function() {
+                if (!currentImage) {
+                    showError('No image loaded. Please upload or paste an image first.');
+                    return;
+                }
+
+                // Re-draw to ensure canvas is fresh
+                drawOutput(currentImage);
+
+                // Convert to blob and download
+                mainCanvas.toBlob(function(blob) {
+                    if (!blob) {
+                        showError('Failed to generate PNG. Please try again.');
+                        return;
+                    }
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'upscaled-2000x2000.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    // Revoke after a short delay to ensure download starts
+                    setTimeout(function() {
+                        URL.revokeObjectURL(url);
+                    }, 200);
+                }, 'image/png');
+            });
+
+            // Handle keyboard activation of upload area (Enter/Space)
+            uploadArea.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    fileInput.click();
+                }
+            });
+
+            // Handle window resize to adjust preview canvas display size
+            function handleResize() {
+                if (outputPreviewWrapper && outputPreviewCanvas) {
+                    const wrapperWidth = outputPreviewWrapper.clientWidth;
+                    const displaySize = Math.min(wrapperWidth - 8, 280);
+                    outputPreviewCanvas.style.width = displaySize + 'px';
+                    outputPreviewCanvas.style.height = displaySize + 'px';
+                }
+            }
+            window.addEventListener('resize', handleResize);
+
+            // Initial setup: ensure preview is hidden
+            previewSection.classList.remove('visible');
+            originalPreviewImg.style.display = 'none';
+            noOriginalPlaceholder.style.display = 'block';
+            outputPreviewCanvas.style.width = '280px';
+            outputPreviewCanvas.style.height = '280px';
+
+            // Clear the preview canvas initially
+            const initCtx = outputPreviewCanvas.getContext('2d');
+            initCtx.clearRect(0, 0, 280, 280);
+
+            console.log('✅ Image Upscaler ready. Drop, click, or paste (Ctrl+V) an image to begin.');
+            console.log('   Output: 2000×2000 PNG with transparent padding, aspect ratio preserved.');
+            console.log('   All processing is local — no uploads, no server, no internet.');
+        })();
+    </script>
+</body>
+</html>
