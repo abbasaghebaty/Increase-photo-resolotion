@@ -1,14 +1,10 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <link rel="icon" type="image/png" href="favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ابزار تغییر رزولوشن تصویر</title>
-    <!-- =============================================
-         لود فونت وزیرمتن (Vazirmatn) از CDN 
-         اولویت: Vazirmatn، سپس Tahoma, Arial
-         ============================================= -->
+    <!-- لود فونت وزیرمتن (Vazirmatn) از CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     <style>
         /* ========================================
@@ -32,7 +28,6 @@
             direction: rtl;
             padding: 20px 10px;
             line-height: 1.7;
-            /* بهبود خوانایی متن فارسی */
             font-weight: 400;
         }
 
@@ -182,7 +177,7 @@
             background: #1b5e20;
         }
 
-        /* بخش تنظیمات رزولوشن (نمایش رزولوشن اولیه و سفارشی) */
+        /* بخش تنظیمات رزولوشن */
         .resolution-panel {
             background: #f8fafc;
             border-radius: 18px;
@@ -390,54 +385,27 @@
             box-shadow: none;
         }
 
-        /* ---------- بخش Made by Abbas (خارج از کادر اصلی) ---------- */
-        .creator-outside {
-            text-align: center;
-            margin: 8px 0 12px 0;
-            font-size: 14px;
-            color: #5e6f80;
-            font-weight: 400;
-        }
-
-        .creator-outside .creator-link {
-            color: #b71c1c;
-            text-decoration: none;
-            font-weight: 700;
-            border-bottom: 2px dotted #b71c1c;
-            transition: color 0.2s, border-color 0.2s;
-            cursor: pointer;
-            margin: 0 4px;
-        }
-
-        .creator-outside .creator-link:hover {
-            color: #7f0000;
-            border-bottom: 2px solid #7f0000;
-        }
-
-        /* فوتر */
+        /* فوتر (فقط لینک Made by Abbas) */
         .footer {
             text-align: center;
             padding: 22px 18px;
             background: #1e2a3a;
-            color: #cfd8dc;
             border-radius: 16px;
             width: 100%;
             max-width: 850px;
-            font-size: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
             margin-top: 5px;
-            font-weight: 400;
+            font-size: 16px;
         }
 
-        .footer strong {
+        .footer a {
             color: #ffffff;
+            text-decoration: none;
+            font-weight: 700;
+            transition: opacity 0.2s;
         }
 
-        .footer .footer-desc {
-            font-size: 13px;
-            color: #90a4ae;
+        .footer a:hover {
+            opacity: 0.8;
         }
 
         /* واکنش‌گرایی موبایل */
@@ -474,7 +442,7 @@
         <!-- هدر -->
         <div class="header">
             <h1>ابزار تغییر رزولوشن تصویر</h1>
-            <p>تصویر خود را بارگذاری کنید و با کیفیت بالا به رزولوشن دلخواه تغییر دهید</p>
+            <p>تصویر خود را بارگذاری کنید و به رزولوشن ۲۰۰۰ در ۲۰۰۰ (یا دلخواه) تبدیل کنید</p>
         </div>
 
         <!-- بخش آپلود (درگ‌اند‌دراپ + کلیک) - بدون آیکون، فقط متن و دکمه -->
@@ -541,37 +509,29 @@
         </div>
     </div>
 
-    <!-- ========== بخش Made by Abbas (خارج از کادر اصلی، پایین صفحه) ========== -->
-    <div class="creator-outside">
-        <span>ساخته شده توسط</span>
-        <a href="#" class="creator-link" id="creatorLink" target="_blank" rel="noopener">Made by Abbas</a>
-    </div>
-
-    <!-- فوتر -->
+    <!-- ========== فوتر: فقط یک لینک Made by Abbas ========== -->
     <div class="footer">
-        <div>© <span id="currentYear"></span> - تمامی حقوق محفوظ است</div>
-        <div><strong>Made by Abbas</strong> — ابزار آنلاین تغییر رزولوشن تصویر</div>
-        <div class="footer-desc">پشتیبانی از فرمت‌های JPG، PNG، WEBP، GIF، BMP و TIFF</div>
+        <!-- لینک قابل تغییر: مقدار href را می‌توانید در JavaScript یا مستقیماً اینجا ویرایش کنید -->
+        <a href="https://abbasaghebaty.github.io/about-me/" target="_blank" class="made-by-link" title="ساخته شده توسط عباس">Made by Abbas</a>
     </div>
 
     <script>
         // =============================================
         // JavaScript اصلی برنامه - مدیریت تمام عملکردها
-        // نسخه اصلاح‌شده: بدون نمایش پیش‌نمایش اولیه،
-        // فونت وزیرمتن، دکمه ساده، Made by Abbas بیرون کادر
+        // تغییر مهم: رزولوشن پیش‌فرض دقیقاً ۲۰۰۰×۲۰۰۰
         // =============================================
 
         (function() {
             // ---------- متغیرهای سراسری ----------
-            let originalImage = null; // شیء Image اصلی (دست‌نخورده)
-            let currentOutputBlob = null; // باینری تصویر خروجی نهایی
-            let originalWidth = 0; // عرض اصلی تصویر
-            let originalHeight = 0; // ارتفاع اصلی تصویر
-            let lockAspect = true; // وضعیت قفل نسبت تصویر (پیش‌فرض فعال)
-            const DEFAULT_RES = 2000; // رزولوشن پیش‌فرض 2000x2000
+            let originalImage = null;
+            let currentOutputBlob = null;
+            let originalWidth = 0;
+            let originalHeight = 0;
+            let lockAspect = true; // قفل نسبت تصویر برای تغییرات دستی
+            const DEFAULT_RES = 2000; // مقدار پیش‌فرض ۲۰۰۰
 
-            // لینک سازنده (قابل تغییر)
-            const CREATOR_LINK = "https://YOUR-LINK-HERE";
+            // لینک سازنده (مقدار پیش‌فرض: "#" تا به‌راحتی آن را پیدا و جایگزین کنید)
+            const CREATOR_LINK = "#"; // 👈 اینجا لینک اصلی خود را قرار دهید
 
             // ---------- ارجاع به عناصر DOM ----------
             const uploadArea = document.getElementById('uploadArea');
@@ -590,14 +550,11 @@
             const formatSelect = document.getElementById('formatSelect');
             const downloadBtn = document.getElementById('downloadBtn');
             const creatorLink = document.getElementById('creatorLink');
-            const currentYearSpan = document.getElementById('currentYear');
 
-            // تنظیم لینک سازنده و سال
+            // تنظیم لینک فوتر
             creatorLink.href = CREATOR_LINK;
-            currentYearSpan.textContent = new Date().getFullYear();
 
             // ---------- توابع کمکی ----------
-
             function readFileAsDataURL(file) {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
@@ -612,14 +569,11 @@
                     const img = new Image();
                     img.crossOrigin = "Anonymous";
                     img.onload = () => resolve(img);
-                    img.onerror = () => reject(new Error('خطا در بارگذاری تصویر. لینک معتبر نیست یا دسترسی محدود است.'));
+                    img.onerror = () => reject(new Error('خطا در بارگذاری تصویر.'));
                     img.src = src;
                 });
             }
 
-            /**
-             * تغییر اندازه تصویر با کیفیت بالا (Canvas)
-             */
             function resizeImageHighQuality(sourceImg, targetWidth, targetHeight) {
                 const canvas = document.createElement('canvas');
                 canvas.width = targetWidth;
@@ -641,52 +595,41 @@
             }
 
             /**
-             * پردازش اولیه: تبدیل به رزولوشن 2000x2000 (با حفظ نسبت)
+             * پردازش پیش‌فرض: تبدیل تصویر به ابعاد دقیق ۲۰۰۰×۲۰۰۰
              */
             async function processDefaultResolution(img) {
                 originalWidth = img.width;
                 originalHeight = img.height;
 
-                // نمایش رزولوشن اولیه در پنل (بدون نمایش عکس)
+                // نمایش رزولوشن اولیه
                 initialResValue.textContent = `${originalWidth} × ${originalHeight}`;
                 resolutionPanel.style.display = 'flex';
 
-                // محاسبه ابعاد متناسب با 2000
-                let targetW, targetH;
-                const ratio = originalWidth / originalHeight;
-                if (originalWidth >= originalHeight) {
-                    targetW = DEFAULT_RES;
-                    targetH = Math.round(DEFAULT_RES / ratio);
-                } else {
-                    targetH = DEFAULT_RES;
-                    targetW = Math.round(DEFAULT_RES * ratio);
-                }
+                // ابعاد خروجی دقیقاً ۲۰۰۰×۲۰۰۰ (بدون توجه به نسبت)
+                const targetW = DEFAULT_RES;
+                const targetH = DEFAULT_RES;
 
                 // به‌روزرسانی ورودی‌های رزولوشن سفارشی
                 widthInput.value = targetW;
                 heightInput.value = targetH;
                 currentOutResolution.textContent = `رزولوشن خروجی: ${targetW} × ${targetH}`;
 
-                // ایجاد خروجی
+                // ایجاد خروجی با ابعاد دقیق
                 const canvas = resizeImageHighQuality(img, targetW, targetH);
                 outputPreview.src = canvas.toDataURL('image/png');
                 outputSection.style.display = 'flex';
                 downloadBtn.disabled = false;
 
-                // ذخیره برای دانلود
                 currentOutputBlob = await canvasToBlob(canvas, 'image/png');
             }
 
-            /**
-             * مدیریت ورود تصویر جدید
-             */
             async function handleNewImage(img) {
                 originalImage = img;
                 await processDefaultResolution(img);
             }
 
             /**
-             * اعمال رزولوشن سفارشی
+             * اعمال رزولوشن سفارشی (با توجه به قفل نسبت تصویر)
              */
             async function applyCustomResolution() {
                 if (!originalImage) {
@@ -696,16 +639,17 @@
                 let newWidth = parseInt(widthInput.value);
                 let newHeight = parseInt(heightInput.value);
 
+                // اگر مقادیر خالی یا نامعتبر بودند، از ۲۰۰۰ استفاده کن
                 if (isNaN(newWidth) || newWidth <= 0) {
-                    newWidth = parseInt(widthInput.placeholder) || DEFAULT_RES;
+                    newWidth = DEFAULT_RES;
                     widthInput.value = newWidth;
                 }
                 if (isNaN(newHeight) || newHeight <= 0) {
-                    newHeight = parseInt(heightInput.placeholder) || DEFAULT_RES;
+                    newHeight = DEFAULT_RES;
                     heightInput.value = newHeight;
                 }
                 if (newWidth > 8000 || newHeight > 8000) {
-                    alert('حداکثر رزولوشن مجاز 8000×8000 پیکسل می‌باشد.');
+                    alert('حداکثر رزولوشن مجاز ۸۰۰۰×۸۰۰۰ پیکسل می‌باشد.');
                     return;
                 }
 
@@ -736,15 +680,12 @@
             }
 
             // ---------- Event Listeners ----------
-
-            // 1) کلیک روی ناحیه آپلود (باز کردن فایل)
             uploadArea.addEventListener('click', (e) => {
                 if (e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') {
                     fileInput.click();
                 }
             });
 
-            // 2) انتخاب فایل
             fileInput.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -758,7 +699,6 @@
                 fileInput.value = '';
             });
 
-            // 3) درگ‌اند‌دراپ
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 uploadArea.classList.add('dragover');
@@ -786,7 +726,6 @@
                 }
             });
 
-            // 4) Paste از کلیپبورد
             document.addEventListener('paste', async (e) => {
                 const items = e.clipboardData?.items;
                 if (!items) return;
@@ -806,7 +745,6 @@
                 }
             });
 
-            // 5) لینک مستقیم
             loadUrlBtn.addEventListener('click', async () => {
                 const url = urlInput.value.trim();
                 if (!url) {
@@ -821,13 +759,14 @@
                 }
             });
 
-            // 6) قفل نسبت تصویر
+            // مدیریت قفل نسبت تصویر (فقط برای تنظیمات دستی)
             lockAspectBtn.addEventListener('click', () => {
                 lockAspect = !lockAspect;
                 if (lockAspect) {
                     lockAspectBtn.classList.add('locked');
                     lockAspectBtn.textContent = '🔒';
                     lockAspectBtn.title = 'حفظ نسبت تصویر (فعال)';
+                    // همگام‌سازی بر اساس عرض فعلی
                     if (originalWidth && originalHeight) {
                         const ratio = originalWidth / originalHeight;
                         const curWidth = parseInt(widthInput.value) || originalWidth;
@@ -840,7 +779,7 @@
                 }
             });
 
-            // همگام‌سازی ابعاد با قفل
+            // همگام‌سازی ابعاد در حالت قفل
             widthInput.addEventListener('input', () => {
                 if (lockAspect && originalWidth && originalHeight) {
                     const ratio = originalWidth / originalHeight;
@@ -861,10 +800,8 @@
                 }
             });
 
-            // 7) اعمال رزولوشن سفارشی
             applyResBtn.addEventListener('click', applyCustomResolution);
 
-            // 8) تغییر فرمت (بروزرسانی Blob)
             formatSelect.addEventListener('change', async () => {
                 if (!originalImage) return;
                 const curW = parseInt(widthInput.value) || DEFAULT_RES;
@@ -875,14 +812,13 @@
                 outputPreview.src = canvas.toDataURL(selectedFormat, 0.92);
             });
 
-            // 9) دانلود
             downloadBtn.addEventListener('click', downloadOutput);
 
             // مخفی‌سازی اولیه
             resolutionPanel.style.display = 'none';
             outputSection.style.display = 'none';
 
-            console.log('✅ ابزار تغییر رزولوشن (نسخه اصلاح‌شده) آماده است.');
+            console.log('✅ ابزار تغییر رزولوشن (۲۰۰۰×۲۰۰۰ پیش‌فرض) آماده استفاده است.');
         })();
     </script>
 </body>
