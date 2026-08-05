@@ -4,14 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ابزار تغییر رزولوشن تصویر</title>
-    <!-- لود فونت وزیرمتن (Vazirmatn) از CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     <link rel="icon" type="image/png" href="favicon.png">
     <style>
-        /* ========================================
-           CSS اصلی برنامه - طراحی مدرن و واکنش‌گرا
-           فونت: Vazirmatn, Tahoma, Arial, sans-serif
-           ======================================== */
         * {
             margin: 0;
             padding: 0;
@@ -32,7 +27,6 @@
             font-weight: 400;
         }
 
-        /* کانتینر اصلی با عرض محدود و متمرکز - فقط ابزار اصلی */
         .main-container {
             width: 100%;
             max-width: 850px;
@@ -46,7 +40,6 @@
             gap: 28px;
         }
 
-        /* هدر و عنوان */
         .header {
             text-align: center;
             margin-bottom: 5px;
@@ -56,18 +49,17 @@
             font-size: 26px;
             color: #1e2a3a;
             font-weight: 700;
-            letter-spacing: -0.3px;
         }
 
         .header p {
             color: #5a6a7e;
             font-size: 15px;
             margin-top: 4px;
-            font-weight: 400;
         }
 
-        /* بخش آپلود (درگ‌اند‌دراپ) - بدون آیکون اضافی */
+        /* بخش آپلود */
         .upload-area {
+            position: relative;
             border: 3px dashed #b0bec5;
             border-radius: 18px;
             padding: 45px 25px;
@@ -75,7 +67,6 @@
             background: #fafcfd;
             transition: all 0.25s ease;
             cursor: pointer;
-            position: relative;
         }
 
         .upload-area:hover,
@@ -99,7 +90,17 @@
             line-height: 1.8;
         }
 
-        /* دکمه اصلی آپلود - ساده، بزرگ و فارسی */
+        /* input مخفی شده برای موبایل */
+        .file-input-hidden {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        /* دکمه آپلود (حالا یک label واقعی) */
         .file-input-label {
             display: inline-block;
             background: #1976d2;
@@ -113,16 +114,11 @@
             box-shadow: 0 8px 20px rgba(25, 118, 210, 0.2);
             border: none;
             font-family: Vazirmatn, Tahoma, Arial, sans-serif;
-            letter-spacing: 0;
         }
 
         .file-input-label:hover {
             background: #1565c0;
             box-shadow: 0 10px 24px rgba(21, 101, 192, 0.25);
-        }
-
-        #fileInput {
-            display: none;
         }
 
         /* بخش لینک مستقیم */
@@ -132,7 +128,7 @@
             flex-wrap: wrap;
             align-items: center;
             background: #f4f6f8;
-            padding: 16px 20px;
+            padding: 12px 16px;
             border-radius: 14px;
             border: 1px solid #e1e6eb;
         }
@@ -141,18 +137,24 @@
             font-weight: 600;
             color: #1e2a3a;
             white-space: nowrap;
-            font-size: 15px;
+            font-size: 14px;
         }
 
         .url-section input {
-            flex: 1 1 220px;
-            padding: 12px 16px;
+            flex: 1 1 200px;
+            padding: 8px 12px;
             border: 2px solid #dde1e6;
             border-radius: 10px;
             font-family: Vazirmatn, Tahoma, Arial, sans-serif;
             font-size: 14px;
-            transition: border 0.2s;
+            font-weight: 500;
+            line-height: 1.7;
+            color: #333;
+            letter-spacing: normal;
+            height: 44px;
             background: white;
+            transition: border 0.2s;
+            box-sizing: border-box;
         }
 
         .url-section input:focus {
@@ -160,25 +162,36 @@
             outline: none;
         }
 
+        .url-section input::placeholder {
+            font-family: Vazirmatn, Tahoma, Arial, sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.7;
+            color: #999;
+            letter-spacing: normal;
+        }
+
         .url-section button {
             background: #2e7d32;
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
             font-family: Vazirmatn, Tahoma, Arial, sans-serif;
             font-size: 14px;
-            transition: background 0.2s;
+            height: 44px;
             white-space: nowrap;
+            box-sizing: border-box;
+            transition: background 0.2s;
         }
 
         .url-section button:hover {
             background: #1b5e20;
         }
 
-        /* بخش تنظیمات رزولوشن */
+        /* تنظیمات رزولوشن */
         .resolution-panel {
             background: #f8fafc;
             border-radius: 18px;
@@ -201,18 +214,10 @@
             color: #0d3b66;
         }
 
-        .initial-res-info span:first-child {
-            font-weight: 700;
-            margin-left: 5px;
-        }
-
         .custom-res-title {
             font-size: 17px;
             font-weight: 700;
             color: #1e2a3a;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
         .resolution-inputs {
@@ -236,8 +241,8 @@
         .input-group label {
             font-weight: 600;
             color: #37474f;
-            white-space: nowrap;
             font-size: 14px;
+            white-space: nowrap;
         }
 
         .input-group input {
@@ -265,8 +270,6 @@
             justify-content: center;
             border: 2px solid #dde1e6;
             transition: all 0.2s;
-            background: #f9fafb;
-            font-weight: bold;
         }
 
         .lock-icon.locked {
@@ -289,7 +292,6 @@
             transition: background 0.2s;
             align-self: flex-start;
             box-shadow: 0 6px 16px rgba(230, 81, 0, 0.2);
-            letter-spacing: 0;
         }
 
         .apply-btn:hover {
@@ -303,19 +305,37 @@
             padding: 10px 18px;
             border-radius: 20px;
             display: inline-block;
-            align-self: flex-start;
             font-weight: 500;
         }
 
-        /* بخش خروجی و دانلود */
         .output-section {
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
 
+        .thumbnails-row {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 8px 4px;
+        }
+
+        .thumbnails-row img {
+            height: 70px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            opacity: 0.7;
+            object-fit: cover;
+        }
+
+        .thumbnails-row img.active {
+            border-color: #1976d2;
+            opacity: 1;
+        }
+
         .output-preview-box {
-            max-width: 100%;
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
@@ -324,13 +344,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            min-height: 100px;
         }
 
         .output-preview-box img {
             max-width: 100%;
             max-height: 420px;
             object-fit: contain;
-            display: block;
         }
 
         .format-selection {
@@ -343,7 +363,6 @@
         .format-selection label {
             font-weight: 600;
             color: #1e2a3a;
-            font-size: 15px;
         }
 
         .format-selection select {
@@ -353,27 +372,30 @@
             font-family: Vazirmatn, Tahoma, Arial, sans-serif;
             background: white;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
+        }
+
+        .download-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         .download-btn {
             background: #2e7d32;
             color: white;
             border: none;
-            padding: 15px 32px;
+            padding: 13px 28px;
             border-radius: 34px;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
             font-family: Vazirmatn, Tahoma, Arial, sans-serif;
-            font-size: 17px;
+            font-size: 16px;
             transition: background 0.2s;
-            box-shadow: 0 8px 22px rgba(46, 125, 50, 0.2);
+            box-shadow: 0 6px 18px rgba(46, 125, 50, 0.15);
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            align-self: flex-start;
         }
 
         .download-btn:hover {
@@ -386,34 +408,32 @@
             box-shadow: none;
         }
 
-        /* فوتر (فقط لینک Made by Abbas) */
+        /* فوتر */
         .footer {
-            text-align: center;
-            padding: 22px 18px;
-            background: #1e2a3a;
-            border-radius: 16px;
             width: 100%;
             max-width: 850px;
-            margin-top: 5px;
-            font-size: 16px;
+            margin: 30px auto 0;
+            padding: 16px 10px;
+            text-align: center;
+            border-top: 1px solid #e0e0e0;
+            background: transparent;
         }
 
         .footer a {
-            color: #ffffff;
+            color: #7f8c8d;
             text-decoration: none;
-            font-weight: 700;
-            transition: opacity 0.2s;
+            font-size: 14px;
+            font-weight: 400;
+            transition: color 0.2s;
         }
 
         .footer a:hover {
-            opacity: 0.8;
+            color: #1976d2;
         }
 
-        /* واکنش‌گرایی موبایل */
         @media (max-width: 600px) {
             .main-container {
                 padding: 22px 16px;
-                gap: 22px;
             }
             .upload-area {
                 padding: 30px 15px;
@@ -422,40 +442,38 @@
                 flex-direction: column;
                 align-items: stretch;
             }
+            .url-section input,
+            .url-section button {
+                flex: 0 0 auto;
+                width: 100%;
+                height: 44px;
+            }
             .resolution-inputs {
                 flex-direction: column;
             }
             .apply-btn {
                 width: 100%;
-                text-align: center;
-            }
-            .header h1 {
-                font-size: 22px;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- ========== کادر اصلی ابزار (فقط بخش‌های مربوط به پردازش تصویر) ========== -->
     <div class="main-container">
-        
-        <!-- هدر -->
         <div class="header">
             <h1>ابزار تغییر رزولوشن تصویر</h1>
-            <p>تصویر خود را بارگذاری کنید و به رزولوشن ۲۰۰۰ در ۲۰۰۰ (یا دلخواه) تبدیل کنید</p>
+            <p>تصویر خود را بارگذاری کنید و به رزولوشن دلخواه تبدیل کنید</p>
         </div>
 
-        <!-- بخش آپلود (درگ‌اند‌دراپ + کلیک) - بدون آیکون، فقط متن و دکمه -->
+        <!-- بخش آپلود: label + input مخفی (روش استاندارد موبایل) -->
         <div class="upload-area" id="uploadArea">
+            <input type="file" id="fileInput" accept="image/*" multiple class="file-input-hidden">
             <div class="upload-text">تصویر خود را اینجا رها کنید</div>
             <div class="upload-hint">
                 یا با کلیک روی دکمه زیر فایل را انتخاب کنید<br>
                 همچنین می‌توانید تصویر کپی شده را با Ctrl+V جای‌گذاری کنید
             </div>
-            <!-- دکمه آپلود ساده و فارسی -->
             <label for="fileInput" class="file-input-label">انتخاب تصویر</label>
-            <input type="file" id="fileInput" accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff">
         </div>
 
         <!-- بخش لینک مستقیم -->
@@ -465,39 +483,35 @@
             <button id="loadUrlBtn">بارگذاری از لینک</button>
         </div>
 
-        <!-- پنل تنظیمات رزولوشن (نمایش رزولوشن اولیه + تنظیم سفارشی) -->
+        <!-- پنل تنظیمات رزولوشن -->
         <div class="resolution-panel" id="resolutionPanel" style="display: none;">
-            <!-- نمایش رزولوشن اولیه تصویر (بدون نمایش خود عکس) -->
             <div class="initial-res-info" id="initialResDisplay">
                 <span>📐 رزولوشن اولیه:</span>
                 <span id="initialResValue">-</span>
             </div>
-
-            <!-- بخش رزولوشن سفارشی -->
             <div class="custom-res-title">⚙️ تنظیم رزولوشن خروجی</div>
             <div class="resolution-inputs">
                 <div class="input-group">
                     <label>عرض:</label>
-                    <input type="number" id="widthInput" min="1" step="1" placeholder="2000">
+                    <input type="number" id="widthInput" min="1" step="1" value="2000">
                 </div>
                 <div class="input-group">
                     <label>ارتفاع:</label>
-                    <input type="number" id="heightInput" min="1" step="1" placeholder="2000">
+                    <input type="number" id="heightInput" min="1" step="1" value="2000">
                 </div>
-                <!-- دکمه قفل نسبت تصویر (پیش‌فرض فعال) -->
                 <div class="lock-icon locked" id="lockAspectBtn" title="حفظ نسبت تصویر (فعال)">🔒</div>
             </div>
             <button class="apply-btn" id="applyResBtn">اعمال رزولوشن سفارشی</button>
-            <div class="output-res-info" id="currentOutResolution">رزولوشن خروجی: -</div>
+            <div class="output-res-info" id="currentOutResolution">رزولوشن خروجی: ۲۰۰۰ × ۲۰۰۰</div>
         </div>
 
         <!-- بخش خروجی و دانلود -->
         <div class="output-section" id="outputSection" style="display: none;">
             <h3 style="color:#1e2a3a; font-weight:700;">🖼️ پیش‌نمایش خروجی</h3>
+            <div class="thumbnails-row" id="thumbnailsRow"></div>
             <div class="output-preview-box" id="outputPreviewBox">
                 <img id="outputPreview" src="" alt="پیش‌نمایش تصویر خروجی">
             </div>
-            <!-- انتخاب فرمت خروجی -->
             <div class="format-selection">
                 <label>فرمت خروجی:</label>
                 <select id="formatSelect">
@@ -505,37 +519,23 @@
                     <option value="image/jpeg">JPG (کیفیت 92%)</option>
                 </select>
             </div>
-            <!-- دکمه دانلود -->
-            <button class="download-btn" id="downloadBtn" disabled>⬇️ دانلود تصویر نهایی</button>
+            <div class="download-buttons" id="downloadButtonsContainer"></div>
         </div>
     </div>
 
-    <!-- ========== فوتر: فقط یک لینک Made by Abbas ========== -->
-    <div class="footer">
-        <!-- لینک قابل تغییر: مقدار href را می‌توانید در JavaScript یا مستقیماً اینجا ویرایش کنید -->
-        <a href="https://abbasaghebaty.github.io/about-me/" target="_blank" class="made-by-link" title="ساخته شده توسط عباس">Made by Abbas</a>
-    </div>
+    <footer class="footer">
+        <a href="https://abbasaghebaty.github.io/about-me/" target="_blank">Made by Abbas</a>
+    </footer>
 
     <script>
-        // =============================================
-        // JavaScript اصلی برنامه - مدیریت تمام عملکردها
-        // تغییر مهم: رزولوشن پیش‌فرض دقیقاً ۲۰۰۰×۲۰۰۰
-        // =============================================
-
         (function() {
-            // ---------- متغیرهای سراسری ----------
-            let originalImage = null;
-            let currentOutputBlob = null;
-            let originalWidth = 0;
-            let originalHeight = 0;
-            let lockAspect = true; // قفل نسبت تصویر برای تغییرات دستی
-            const DEFAULT_RES = 2000; // مقدار پیش‌فرض ۲۰۰۰
+            let imagesData = [];
+            let selectedImageIndex = 0;
+            let lockAspect = true;
+            let targetWidth = 2000;
+            let targetHeight = 2000;
+            let currentAspectRatio = 1;
 
-            // لینک سازنده (مقدار پیش‌فرض: "#" تا به‌راحتی آن را پیدا و جایگزین کنید)
-            const CREATOR_LINK = "#"; // 👈 اینجا لینک اصلی خود را قرار دهید
-
-            // ---------- ارجاع به عناصر DOM ----------
-            const uploadArea = document.getElementById('uploadArea');
             const fileInput = document.getElementById('fileInput');
             const urlInput = document.getElementById('urlInput');
             const loadUrlBtn = document.getElementById('loadUrlBtn');
@@ -548,14 +548,10 @@
             const currentOutResolution = document.getElementById('currentOutResolution');
             const outputSection = document.getElementById('outputSection');
             const outputPreview = document.getElementById('outputPreview');
+            const thumbnailsRow = document.getElementById('thumbnailsRow');
             const formatSelect = document.getElementById('formatSelect');
-            const downloadBtn = document.getElementById('downloadBtn');
-            const creatorLink = document.getElementById('creatorLink');
+            const downloadButtonsContainer = document.getElementById('downloadButtonsContainer');
 
-            // تنظیم لینک فوتر
-            creatorLink.href = CREATOR_LINK;
-
-            // ---------- توابع کمکی ----------
             function readFileAsDataURL(file) {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
@@ -575,14 +571,14 @@
                 });
             }
 
-            function resizeImageHighQuality(sourceImg, targetWidth, targetHeight) {
+            function resizeImageHighQuality(sourceImg, w, h) {
                 const canvas = document.createElement('canvas');
-                canvas.width = targetWidth;
-                canvas.height = targetHeight;
+                canvas.width = w;
+                canvas.height = h;
                 const ctx = canvas.getContext('2d');
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
-                ctx.drawImage(sourceImg, 0, 0, targetWidth, targetHeight);
+                ctx.drawImage(sourceImg, 0, 0, w, h);
                 return canvas;
             }
 
@@ -590,236 +586,292 @@
                 return new Promise((resolve, reject) => {
                     canvas.toBlob((blob) => {
                         if (blob) resolve(blob);
-                        else reject(new Error('خطا در ایجاد خروجی تصویر'));
+                        else reject(new Error('خطا در ایجاد خروجی'));
                     }, format, quality);
                 });
             }
 
-            /**
-             * پردازش پیش‌فرض: تبدیل تصویر به ابعاد دقیق ۲۰۰۰×۲۰۰۰
-             */
-            async function processDefaultResolution(img) {
-                originalWidth = img.width;
-                originalHeight = img.height;
+            function generateOutputUrl(blob) {
+                return URL.createObjectURL(blob);
+            }
 
-                // نمایش رزولوشن اولیه
-                initialResValue.textContent = `${originalWidth} × ${originalHeight}`;
+            function getAspectRatio(w, h) { return w / h; }
+
+            function clearPreviousData() {
+                imagesData.forEach(item => {
+                    if (item.outputUrl) URL.revokeObjectURL(item.outputUrl);
+                });
+                imagesData = [];
+                selectedImageIndex = 0;
+                outputPreview.src = '';
+                thumbnailsRow.innerHTML = '';
+                downloadButtonsContainer.innerHTML = '';
+                outputSection.style.display = 'none';
+                resolutionPanel.style.display = 'none';
+            }
+
+            async function addImagesFromFiles(files) {
+                const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+                if (validFiles.length === 0) {
+                    alert('لطفاً فقط فایل‌های تصویری انتخاب کنید.');
+                    return;
+                }
+                clearPreviousData();
+                for (const file of validFiles) {
+                    try {
+                        const dataUrl = await readFileAsDataURL(file);
+                        const img = await loadImageFromSrc(dataUrl);
+                        imagesData.push({
+                            originalImg: img,
+                            width: img.width,
+                            height: img.height,
+                            outputBlob: null,
+                            outputUrl: null,
+                            fileName: file.name || 'image'
+                        });
+                    } catch (err) {
+                        console.error('خطا در بارگذاری فایل:', err);
+                    }
+                }
+                if (imagesData.length > 0) onImagesLoaded();
+            }
+
+            async function addImageFromUrl(url) {
+                clearPreviousData();
+                try {
+                    const img = await loadImageFromSrc(url);
+                    imagesData.push({
+                        originalImg: img,
+                        width: img.width,
+                        height: img.height,
+                        outputBlob: null,
+                        outputUrl: null,
+                        fileName: 'image-from-url'
+                    });
+                    onImagesLoaded();
+                } catch (err) {
+                    alert('خطا در بارگذاری تصویر از لینک: ' + err.message);
+                }
+            }
+
+            async function addImageFromBlob(blob) {
+                clearPreviousData();
+                try {
+                    const dataUrl = await readFileAsDataURL(blob);
+                    const img = await loadImageFromSrc(dataUrl);
+                    imagesData.push({
+                        originalImg: img,
+                        width: img.width,
+                        height: img.height,
+                        outputBlob: null,
+                        outputUrl: null,
+                        fileName: 'pasted-image'
+                    });
+                    onImagesLoaded();
+                } catch (err) {
+                    console.error('خطا در بارگذاری تصویر clipboard:', err);
+                }
+            }
+
+            function onImagesLoaded() {
+                if (imagesData.length === 0) return;
+                const firstImg = imagesData[0];
+                currentAspectRatio = getAspectRatio(firstImg.width, firstImg.height);
+                initialResValue.textContent = imagesData.length === 1
+                    ? `${firstImg.width} × ${firstImg.height}`
+                    : `${imagesData.length} تصویر بارگذاری شد | اولین: ${firstImg.width} × ${firstImg.height}`;
+                if (lockAspect) {
+                    targetHeight = Math.round(targetWidth / currentAspectRatio);
+                }
+                widthInput.value = targetWidth;
+                heightInput.value = targetHeight;
+                updateOutputResolutionLabel();
                 resolutionPanel.style.display = 'flex';
-
-                // ابعاد خروجی دقیقاً ۲۰۰۰×۲۰۰۰ (بدون توجه به نسبت)
-                const targetW = DEFAULT_RES;
-                const targetH = DEFAULT_RES;
-
-                // به‌روزرسانی ورودی‌های رزولوشن سفارشی
-                widthInput.value = targetW;
-                heightInput.value = targetH;
-                currentOutResolution.textContent = `رزولوشن خروجی: ${targetW} × ${targetH}`;
-
-                // ایجاد خروجی با ابعاد دقیق
-                const canvas = resizeImageHighQuality(img, targetW, targetH);
-                outputPreview.src = canvas.toDataURL('image/png');
                 outputSection.style.display = 'flex';
-                downloadBtn.disabled = false;
-
-                currentOutputBlob = await canvasToBlob(canvas, 'image/png');
+                processAllImages();
+                updatePreviewAndThumbnails();
             }
 
-            async function handleNewImage(img) {
-                originalImage = img;
-                await processDefaultResolution(img);
-            }
-
-            /**
-             * اعمال رزولوشن سفارشی (با توجه به قفل نسبت تصویر)
-             */
-            async function applyCustomResolution() {
-                if (!originalImage) {
-                    alert('لطفاً ابتدا یک تصویر وارد کنید.');
-                    return;
-                }
-                let newWidth = parseInt(widthInput.value);
-                let newHeight = parseInt(heightInput.value);
-
-                // اگر مقادیر خالی یا نامعتبر بودند، از ۲۰۰۰ استفاده کن
-                if (isNaN(newWidth) || newWidth <= 0) {
-                    newWidth = DEFAULT_RES;
-                    widthInput.value = newWidth;
-                }
-                if (isNaN(newHeight) || newHeight <= 0) {
-                    newHeight = DEFAULT_RES;
-                    heightInput.value = newHeight;
-                }
-                if (newWidth > 8000 || newHeight > 8000) {
-                    alert('حداکثر رزولوشن مجاز ۸۰۰۰×۸۰۰۰ پیکسل می‌باشد.');
-                    return;
-                }
-
-                const canvas = resizeImageHighQuality(originalImage, newWidth, newHeight);
-                outputPreview.src = canvas.toDataURL('image/png');
-                currentOutResolution.textContent = `رزولوشن خروجی: ${newWidth} × ${newHeight}`;
-
-                const selectedFormat = formatSelect.value;
-                currentOutputBlob = await canvasToBlob(canvas, selectedFormat, 0.92);
-                downloadBtn.disabled = false;
-            }
-
-            function downloadOutput() {
-                if (!currentOutputBlob) {
-                    alert('ابتدا تصویری پردازش کنید.');
-                    return;
-                }
-                const url = URL.createObjectURL(currentOutputBlob);
-                const a = document.createElement('a');
-                a.href = url;
+            async function processAllImages() {
                 const format = formatSelect.value;
-                const ext = format === 'image/png' ? 'png' : 'jpg';
-                a.download = `resized_${Date.now()}.${ext}`;
+                const quality = 0.92;
+                for (let i = 0; i < imagesData.length; i++) {
+                    const item = imagesData[i];
+                    const canvas = resizeImageHighQuality(item.originalImg, targetWidth, targetHeight);
+                    try {
+                        const blob = await canvasToBlob(canvas, format, quality);
+                        if (item.outputUrl) URL.revokeObjectURL(item.outputUrl);
+                        item.outputBlob = blob;
+                        item.outputUrl = generateOutputUrl(blob);
+                    } catch (err) {
+                        console.error('خطا در پردازش تصویر:', err);
+                    }
+                }
+                updatePreviewAndThumbnails();
+                updateDownloadButtons();
+            }
+
+            function updatePreviewAndThumbnails() {
+                if (imagesData.length === 0) return;
+                if (selectedImageIndex >= imagesData.length) selectedImageIndex = 0;
+                outputPreview.src = imagesData[selectedImageIndex].outputUrl || '';
+                thumbnailsRow.innerHTML = '';
+                if (imagesData.length > 1) {
+                    imagesData.forEach((item, idx) => {
+                        const thumb = document.createElement('img');
+                        thumb.src = item.outputUrl || '';
+                        thumb.alt = `تصویر ${idx + 1}`;
+                        if (idx === selectedImageIndex) thumb.classList.add('active');
+                        thumb.addEventListener('click', () => {
+                            selectedImageIndex = idx;
+                            updatePreviewAndThumbnails();
+                        });
+                        thumbnailsRow.appendChild(thumb);
+                    });
+                }
+            }
+
+            function updateDownloadButtons() {
+                downloadButtonsContainer.innerHTML = '';
+                if (imagesData.length === 0) return;
+                if (imagesData.length === 1) {
+                    const btn = document.createElement('button');
+                    btn.className = 'download-btn';
+                    btn.textContent = '⬇️ دانلود تصویر نهایی';
+                    btn.addEventListener('click', () => downloadImage(0));
+                    downloadButtonsContainer.appendChild(btn);
+                } else {
+                    imagesData.forEach((_, idx) => {
+                        const btn = document.createElement('button');
+                        btn.className = 'download-btn';
+                        btn.textContent = `⬇️ دانلود تصویر ${idx + 1}`;
+                        btn.addEventListener('click', () => downloadImage(idx));
+                        downloadButtonsContainer.appendChild(btn);
+                    });
+                }
+            }
+
+            function downloadImage(index) {
+                const item = imagesData[index];
+                if (!item || !item.outputBlob) {
+                    alert('تصویر هنوز پردازش نشده است.');
+                    return;
+                }
+                const a = document.createElement('a');
+                a.href = item.outputUrl;
+                const ext = formatSelect.value === 'image/png' ? 'png' : 'jpg';
+                a.download = `${item.fileName.replace(/\.[^/.]+$/, '')}_${targetWidth}x${targetHeight}.${ext}`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-                URL.revokeObjectURL(url);
             }
 
-            // ---------- Event Listeners ----------
-            uploadArea.addEventListener('click', (e) => {
-                if (e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') {
-                    fileInput.click();
-                }
-            });
+            function updateOutputResolutionLabel() {
+                currentOutResolution.textContent = `رزولوشن خروجی: ${targetWidth} × ${targetHeight}`;
+            }
 
-            fileInput.addEventListener('change', async (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                try {
-                    const dataUrl = await readFileAsDataURL(file);
-                    const img = await loadImageFromSrc(dataUrl);
-                    await handleNewImage(img);
-                } catch (err) {
-                    alert('خطا: ' + err.message);
+            // رویداد change روی input (با label فعال می‌شود)
+            fileInput.addEventListener('change', (e) => {
+                if (fileInput.files && fileInput.files.length > 0) {
+                    addImagesFromFiles(fileInput.files);
                 }
                 fileInput.value = '';
             });
 
+            // درگ‌اند‌دراپ (برای دسکتاپ)
+            const uploadArea = document.getElementById('uploadArea');
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 uploadArea.classList.add('dragover');
             });
-            uploadArea.addEventListener('dragleave', (e) => {
-                e.preventDefault();
+            uploadArea.addEventListener('dragleave', () => {
                 uploadArea.classList.remove('dragover');
             });
-            uploadArea.addEventListener('drop', async (e) => {
+            uploadArea.addEventListener('drop', (e) => {
                 e.preventDefault();
                 uploadArea.classList.remove('dragover');
-                const files = e.dataTransfer.files;
-                if (!files.length) return;
-                const file = files[0];
-                if (!file.type.startsWith('image/')) {
-                    alert('فقط فایل تصویری مجاز است.');
-                    return;
-                }
-                try {
-                    const dataUrl = await readFileAsDataURL(file);
-                    const img = await loadImageFromSrc(dataUrl);
-                    await handleNewImage(img);
-                } catch (err) {
-                    alert('خطا: ' + err.message);
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    addImagesFromFiles(e.dataTransfer.files);
                 }
             });
 
-            document.addEventListener('paste', async (e) => {
+            // Paste از کلیپ‌بورد
+            document.addEventListener('paste', (e) => {
                 const items = e.clipboardData?.items;
                 if (!items) return;
-                for (let item of items) {
-                    if (item.type.indexOf('image') !== -1) {
-                        e.preventDefault();
-                        const file = item.getAsFile();
-                        try {
-                            const dataUrl = await readFileAsDataURL(file);
-                            const img = await loadImageFromSrc(dataUrl);
-                            await handleNewImage(img);
-                        } catch (err) {
-                            alert('خطا در بارگذاری از کلیپبورد: ' + err.message);
+                for (const item of items) {
+                    if (item.type.startsWith('image/')) {
+                        const blob = item.getAsFile();
+                        if (blob) {
+                            e.preventDefault();
+                            addImageFromBlob(blob);
+                            break;
                         }
-                        break;
                     }
                 }
             });
 
-            loadUrlBtn.addEventListener('click', async () => {
+            // بارگذاری از URL
+            loadUrlBtn.addEventListener('click', () => {
                 const url = urlInput.value.trim();
-                if (!url) {
-                    alert('لینک تصویر را وارد کنید.');
-                    return;
-                }
-                try {
-                    const img = await loadImageFromSrc(url);
-                    await handleNewImage(img);
-                } catch (err) {
-                    alert('خطا: ' + err.message);
-                }
+                if (!url) return alert('لطفاً یک لینک معتبر وارد کنید.');
+                addImageFromUrl(url);
+            });
+            urlInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') loadUrlBtn.click();
             });
 
-            // مدیریت قفل نسبت تصویر (فقط برای تنظیمات دستی)
+            // قفل نسبت تصویر
             lockAspectBtn.addEventListener('click', () => {
                 lockAspect = !lockAspect;
                 if (lockAspect) {
                     lockAspectBtn.classList.add('locked');
                     lockAspectBtn.textContent = '🔒';
-                    lockAspectBtn.title = 'حفظ نسبت تصویر (فعال)';
-                    // همگام‌سازی بر اساس عرض فعلی
-                    if (originalWidth && originalHeight) {
-                        const ratio = originalWidth / originalHeight;
-                        const curWidth = parseInt(widthInput.value) || originalWidth;
-                        heightInput.value = Math.round(curWidth / ratio);
+                    if (imagesData.length > 0) {
+                        const ref = imagesData[selectedImageIndex] || imagesData[0];
+                        currentAspectRatio = getAspectRatio(ref.width, ref.height);
+                        targetHeight = Math.round(targetWidth / currentAspectRatio);
+                        heightInput.value = targetHeight;
+                        updateOutputResolutionLabel();
                     }
                 } else {
                     lockAspectBtn.classList.remove('locked');
                     lockAspectBtn.textContent = '🔓';
-                    lockAspectBtn.title = 'حفظ نسبت تصویر (غیرفعال)';
                 }
             });
 
-            // همگام‌سازی ابعاد در حالت قفل
             widthInput.addEventListener('input', () => {
-                if (lockAspect && originalWidth && originalHeight) {
-                    const ratio = originalWidth / originalHeight;
-                    const newWidth = parseInt(widthInput.value);
-                    if (!isNaN(newWidth) && newWidth > 0) {
-                        heightInput.value = Math.round(newWidth / ratio);
-                    }
+                targetWidth = parseInt(widthInput.value) || 1;
+                if (lockAspect) {
+                    targetHeight = Math.round(targetWidth / currentAspectRatio);
+                    heightInput.value = targetHeight;
                 }
+                updateOutputResolutionLabel();
             });
 
             heightInput.addEventListener('input', () => {
-                if (lockAspect && originalWidth && originalHeight) {
-                    const ratio = originalWidth / originalHeight;
-                    const newHeight = parseInt(heightInput.value);
-                    if (!isNaN(newHeight) && newHeight > 0) {
-                        widthInput.value = Math.round(newHeight * ratio);
-                    }
+                targetHeight = parseInt(heightInput.value) || 1;
+                if (lockAspect) {
+                    targetWidth = Math.round(targetHeight * currentAspectRatio);
+                    widthInput.value = targetWidth;
                 }
+                updateOutputResolutionLabel();
             });
 
-            applyResBtn.addEventListener('click', applyCustomResolution);
-
-            formatSelect.addEventListener('change', async () => {
-                if (!originalImage) return;
-                const curW = parseInt(widthInput.value) || DEFAULT_RES;
-                const curH = parseInt(heightInput.value) || DEFAULT_RES;
-                const canvas = resizeImageHighQuality(originalImage, curW, curH);
-                const selectedFormat = formatSelect.value;
-                currentOutputBlob = await canvasToBlob(canvas, selectedFormat, 0.92);
-                outputPreview.src = canvas.toDataURL(selectedFormat, 0.92);
+            applyResBtn.addEventListener('click', () => {
+                targetWidth = parseInt(widthInput.value) || 2000;
+                targetHeight = parseInt(heightInput.value) || 2000;
+                widthInput.value = targetWidth;
+                heightInput.value = targetHeight;
+                updateOutputResolutionLabel();
+                if (imagesData.length > 0) processAllImages();
             });
 
-            downloadBtn.addEventListener('click', downloadOutput);
+            formatSelect.addEventListener('change', () => {
+                if (imagesData.length > 0) processAllImages();
+            });
 
-            // مخفی‌سازی اولیه
-            resolutionPanel.style.display = 'none';
-            outputSection.style.display = 'none';
-
-            console.log('✅ ابزار تغییر رزولوشن (۲۰۰۰×۲۰۰۰ پیش‌فرض) آماده استفاده است.');
+            updateOutputResolutionLabel();
         })();
     </script>
 </body>
