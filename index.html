@@ -446,18 +446,22 @@
                 padding: 20px 14px;
                 gap: 22px;
             }
+
             .upload-area {
                 padding: 28px 14px;
             }
+
             .url-section {
                 flex-direction: row;
                 flex-wrap: wrap;
                 gap: 8px;
                 padding: 8px 10px;
             }
+
             .url-section label {
                 font-size: 12px;
             }
+
             .url-section input {
                 flex: 1 1 120px;
                 height: 38px;
@@ -465,6 +469,7 @@
                 padding: 6px 8px;
                 min-width: 100px;
             }
+
             .url-section button {
                 height: 38px;
                 font-size: 12px;
@@ -561,36 +566,52 @@
                 <span>📐 رزولوشن اولیه:</span>
                 <span id="initialResValue">-</span>
             </div>
+
             <div class="custom-res-title">⚙️ تنظیم رزولوشن خروجی</div>
+
             <div class="resolution-inputs-row">
                 <div class="input-group">
                     <label>عرض:</label>
                     <input type="number" id="widthInput" min="1" step="1" value="2000">
                 </div>
+
                 <div class="input-group">
                     <label>ارتفاع:</label>
                     <input type="number" id="heightInput" min="1" step="1" value="2000">
                 </div>
+
                 <div class="lock-icon locked" id="lockAspectBtn" title="حفظ نسبت تصویر (فعال)">🔒</div>
             </div>
-            <button class="apply-btn" id="applyResBtn">اعمال رزولوشن سفارشی</button>
-            <div class="output-res-info" id="currentOutResolution">رزولوشن خروجی: ۲۰۰۰ × ۲۰۰۰</div>
+
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <button class="apply-btn" id="applyResBtn">اعمال رزولوشن سفارشی</button>
+                <button class="apply-btn" id="clearImageBtn" style="background:#c62828; box-shadow:0 6px 16px rgba(198,40,40,0.2);">پاک کردن تصویر</button>
+            </div>
+
+            <div class="output-res-info" id="currentOutResolution">
+                رزولوشن خروجی: ۲۰۰۰ × ۲۰۰۰
+            </div>
         </div>
 
         <!-- بخش خروجی و دانلود -->
         <div class="output-section" id="outputSection" style="display: none;">
             <h3 style="color:#1e2a3a; font-weight:700;">🖼️ پیش‌نمایش خروجی</h3>
+
             <div class="thumbnails-row" id="thumbnailsRow"></div>
+
             <div class="output-preview-box" id="outputPreviewBox">
                 <img id="outputPreview" src="" alt="پیش‌نمایش تصویر خروجی">
             </div>
+
             <div class="format-selection">
                 <label>فرمت خروجی:</label>
+
                 <select id="formatSelect">
                     <option value="image/png">PNG (کیفیت بالا)</option>
                     <option value="image/jpeg">JPG (کیفیت 92%)</option>
                 </select>
             </div>
+
             <div class="download-buttons" id="downloadButtonsContainer"></div>
         </div>
     </div>
@@ -607,6 +628,7 @@
             let targetWidth = 2000;
             let targetHeight = 2000;
             let currentAspectRatio = 1;
+            let autoResize = true;
 
             const fileInput = document.getElementById('fileInput');
             const urlInput = document.getElementById('urlInput');
@@ -617,6 +639,7 @@
             const heightInput = document.getElementById('heightInput');
             const lockAspectBtn = document.getElementById('lockAspectBtn');
             const applyResBtn = document.getElementById('applyResBtn');
+            const clearImageBtn = document.getElementById('clearImageBtn');
             const currentOutResolution = document.getElementById('currentOutResolution');
             const outputSection = document.getElementById('outputSection');
             const outputPreview = document.getElementById('outputPreview');
@@ -647,10 +670,14 @@
                 const canvas = document.createElement('canvas');
                 canvas.width = w;
                 canvas.height = h;
+
                 const ctx = canvas.getContext('2d');
+
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
+
                 ctx.drawImage(sourceImg, 0, 0, w, h);
+
                 return canvas;
             }
 
@@ -667,32 +694,85 @@
                 return URL.createObjectURL(blob);
             }
 
-            function getAspectRatio(w, h) { return w / h; }
+            function getAspectRatio(w, h) {
+                return w / h;
+            }
+
+            /*
+             * بررسی رزولوشن اولیه تصویر
+             *
+             * اگر چند تصویر وجود داشته باشد،
+             * کوچک‌ترین ضلع کوچک‌ترین تصویر ملاک هشدار خواهد بود.
+             *
+             * این هشدار فقط اطلاع‌رسانی است و مانع پردازش تصویر نمی‌شود.
+             */
+            function showResolutionWarning() {
+                if (imagesData.length === 0) return;
+
+                let lowestMinSide = Infinity;
+
+                imagesData.forEach(item => {
+                    const minSide = Math.min(item.width, item.height);
+
+                    if (minSide < lowestMinSide) {
+                        lowestMinSide = minSide;
+                    }
+                });
+
+                if (lowestMinSide < 400) {
+                    alert(
+                        'رزولوشن تصویر اولیه پایین است. به دلیل کوچک بودن تصویر، افزایش ۵ برابری ممکن است باعث تار شدن یا کاهش جزئیات تصویر شود.'
+                    );
+                } else if (lowestMinSide < 600) {
+                    alert(
+                        'رزولوشن تصویر نسبتاً پایین است. ممکن است بعد از افزایش ۵ برابری، مقداری از جزئیات و وضوح تصویر کاهش پیدا کند.'
+                    );
+                }
+            }
+
+            function getAutoResizeDimensions(w, h, scale = 5) {
+                if (!w || !h) return { width: 1, height: 1 };
+
+                return {
+                    width: Math.max(1, Math.round(w * scale)),
+                    height: Math.max(1, Math.round(h * scale))
+                };
+            }
 
             function clearPreviousData() {
                 imagesData.forEach(item => {
-                    if (item.outputUrl) URL.revokeObjectURL(item.outputUrl);
+                    if (item.outputUrl) {
+                        URL.revokeObjectURL(item.outputUrl);
+                    }
                 });
+
                 imagesData = [];
                 selectedImageIndex = 0;
+                autoResize = true;
+
                 outputPreview.src = '';
                 thumbnailsRow.innerHTML = '';
                 downloadButtonsContainer.innerHTML = '';
+
                 outputSection.style.display = 'none';
                 resolutionPanel.style.display = 'none';
             }
 
             async function addImagesFromFiles(files) {
                 const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+
                 if (validFiles.length === 0) {
                     alert('لطفاً فقط فایل‌های تصویری انتخاب کنید.');
                     return;
                 }
+
                 clearPreviousData();
+
                 for (const file of validFiles) {
                     try {
                         const dataUrl = await readFileAsDataURL(file);
                         const img = await loadImageFromSrc(dataUrl);
+
                         imagesData.push({
                             originalImg: img,
                             width: img.width,
@@ -705,13 +785,34 @@
                         console.error('خطا در بارگذاری فایل:', err);
                     }
                 }
-                if (imagesData.length > 0) onImagesLoaded();
+
+                if (imagesData.length > 0) {
+                    onImagesLoaded();
+                }
+            }
+
+            function extractImageUrl(url) {
+                try {
+                    const parsedUrl = new URL(url);
+
+                    if (parsedUrl.hostname.includes('google.com') && parsedUrl.pathname.includes('/imgres')) {
+                        const imageUrl = parsedUrl.searchParams.get('imgurl');
+                        if (imageUrl) return imageUrl;
+                    }
+                } catch (err) {
+                    // اگر لینک URL استاندارد نباشد، همان لینک اولیه بررسی می‌شود.
+                }
+
+                return url;
             }
 
             async function addImageFromUrl(url) {
                 clearPreviousData();
+
                 try {
-                    const img = await loadImageFromSrc(url);
+                    const imageUrl = extractImageUrl(url);
+                    const img = await loadImageFromSrc(imageUrl);
+
                     imagesData.push({
                         originalImg: img,
                         width: img.width,
@@ -720,6 +821,7 @@
                         outputUrl: null,
                         fileName: 'image-from-url'
                     });
+
                     onImagesLoaded();
                 } catch (err) {
                     alert('خطا در بارگذاری تصویر از لینک: ' + err.message);
@@ -728,9 +830,11 @@
 
             async function addImageFromBlob(blob) {
                 clearPreviousData();
+
                 try {
                     const dataUrl = await readFileAsDataURL(blob);
                     const img = await loadImageFromSrc(dataUrl);
+
                     imagesData.push({
                         originalImg: img,
                         width: img.width,
@@ -739,6 +843,7 @@
                         outputUrl: null,
                         fileName: 'pasted-image'
                     });
+
                     onImagesLoaded();
                 } catch (err) {
                     console.error('خطا در بارگذاری تصویر clipboard:', err);
@@ -747,19 +852,40 @@
 
             function onImagesLoaded() {
                 if (imagesData.length === 0) return;
+
                 const firstImg = imagesData[0];
-                currentAspectRatio = getAspectRatio(firstImg.width, firstImg.height);
+
+                currentAspectRatio = getAspectRatio(
+                    firstImg.width,
+                    firstImg.height
+                );
+
                 initialResValue.textContent = imagesData.length === 1
                     ? `${firstImg.width} × ${firstImg.height}`
                     : `${imagesData.length} تصویر بارگذاری شد | اولین: ${firstImg.width} × ${firstImg.height}`;
-                if (lockAspect) {
+
+                if (autoResize && lockAspect) {
+                    const dimensions = getAutoResizeDimensions(firstImg.width, firstImg.height);
+                    targetWidth = dimensions.width;
+                    targetHeight = dimensions.height;
+                } else if (lockAspect) {
                     targetHeight = Math.round(targetWidth / currentAspectRatio);
                 }
+
                 widthInput.value = targetWidth;
                 heightInput.value = targetHeight;
+
                 updateOutputResolutionLabel();
+
                 resolutionPanel.style.display = 'flex';
                 outputSection.style.display = 'flex';
+
+                /*
+                 * بررسی رزولوشن قبل از شروع پردازش.
+                 * هشدار مانع ادامه پردازش نمی‌شود.
+                 */
+                showResolutionWarning();
+
                 processAllImages();
                 updatePreviewAndThumbnails();
             }
@@ -767,37 +893,70 @@
             async function processAllImages() {
                 const format = formatSelect.value;
                 const quality = 0.92;
+
                 for (let i = 0; i < imagesData.length; i++) {
                     const item = imagesData[i];
-                    const canvas = resizeImageHighQuality(item.originalImg, targetWidth, targetHeight);
+
+                    const dimensions = autoResize
+                        ? getAutoResizeDimensions(item.width, item.height)
+                        : { width: targetWidth, height: targetHeight };
+
+                    const canvas = resizeImageHighQuality(
+                        item.originalImg,
+                        dimensions.width,
+                        dimensions.height
+                    );
+
                     try {
-                        const blob = await canvasToBlob(canvas, format, quality);
-                        if (item.outputUrl) URL.revokeObjectURL(item.outputUrl);
+                        const blob = await canvasToBlob(
+                            canvas,
+                            format,
+                            quality
+                        );
+
+                        if (item.outputUrl) {
+                            URL.revokeObjectURL(item.outputUrl);
+                        }
+
                         item.outputBlob = blob;
                         item.outputUrl = generateOutputUrl(blob);
                     } catch (err) {
                         console.error('خطا در پردازش تصویر:', err);
                     }
                 }
+
                 updatePreviewAndThumbnails();
                 updateDownloadButtons();
             }
 
             function updatePreviewAndThumbnails() {
                 if (imagesData.length === 0) return;
-                if (selectedImageIndex >= imagesData.length) selectedImageIndex = 0;
-                outputPreview.src = imagesData[selectedImageIndex].outputUrl || '';
+
+                if (selectedImageIndex >= imagesData.length) {
+                    selectedImageIndex = 0;
+                }
+
+                outputPreview.src =
+                    imagesData[selectedImageIndex].outputUrl || '';
+
                 thumbnailsRow.innerHTML = '';
+
                 if (imagesData.length > 1) {
                     imagesData.forEach((item, idx) => {
                         const thumb = document.createElement('img');
+
                         thumb.src = item.outputUrl || '';
                         thumb.alt = `تصویر ${idx + 1}`;
-                        if (idx === selectedImageIndex) thumb.classList.add('active');
+
+                        if (idx === selectedImageIndex) {
+                            thumb.classList.add('active');
+                        }
+
                         thumb.addEventListener('click', () => {
                             selectedImageIndex = idx;
                             updatePreviewAndThumbnails();
                         });
+
                         thumbnailsRow.appendChild(thumb);
                     });
                 }
@@ -805,19 +964,31 @@
 
             function updateDownloadButtons() {
                 downloadButtonsContainer.innerHTML = '';
+
                 if (imagesData.length === 0) return;
+
                 if (imagesData.length === 1) {
                     const btn = document.createElement('button');
+
                     btn.className = 'download-btn';
                     btn.textContent = '⬇️ دانلود تصویر نهایی';
-                    btn.addEventListener('click', () => downloadImage(0));
+
+                    btn.addEventListener('click', () => {
+                        downloadImage(0);
+                    });
+
                     downloadButtonsContainer.appendChild(btn);
                 } else {
                     imagesData.forEach((_, idx) => {
                         const btn = document.createElement('button');
+
                         btn.className = 'download-btn';
                         btn.textContent = `⬇️ دانلود تصویر ${idx + 1}`;
-                        btn.addEventListener('click', () => downloadImage(idx));
+
+                        btn.addEventListener('click', () => {
+                            downloadImage(idx);
+                        });
+
                         downloadButtonsContainer.appendChild(btn);
                     });
                 }
@@ -825,52 +996,79 @@
 
             function downloadImage(index) {
                 const item = imagesData[index];
+
                 if (!item || !item.outputBlob) {
                     alert('تصویر هنوز پردازش نشده است.');
                     return;
                 }
+
                 const a = document.createElement('a');
+
                 a.href = item.outputUrl;
-                const ext = formatSelect.value === 'image/png' ? 'png' : 'jpg';
-                a.download = `${item.fileName.replace(/\.[^/.]+$/, '')}_${targetWidth}x${targetHeight}.${ext}`;
+
+                const ext =
+                    formatSelect.value === 'image/png'
+                        ? 'png'
+                        : 'jpg';
+
+                a.download =
+                    `${item.fileName.replace(/\.[^/.]+$/, '')}_${targetWidth}x${targetHeight}.${ext}`;
+
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
             }
 
             function updateOutputResolutionLabel() {
-                currentOutResolution.textContent = `رزولوشن خروجی: ${targetWidth} × ${targetHeight}`;
+                currentOutResolution.textContent =
+                    `رزولوشن خروجی: ${targetWidth} × ${targetHeight}`;
             }
 
             fileInput.addEventListener('change', (e) => {
-                if (fileInput.files && fileInput.files.length > 0) {
+                if (
+                    fileInput.files &&
+                    fileInput.files.length > 0
+                ) {
                     addImagesFromFiles(fileInput.files);
                 }
+
                 fileInput.value = '';
             });
 
-            const uploadArea = document.getElementById('uploadArea');
+            const uploadArea =
+                document.getElementById('uploadArea');
+
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 uploadArea.classList.add('dragover');
             });
+
             uploadArea.addEventListener('dragleave', () => {
                 uploadArea.classList.remove('dragover');
             });
+
             uploadArea.addEventListener('drop', (e) => {
                 e.preventDefault();
+
                 uploadArea.classList.remove('dragover');
-                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+
+                if (
+                    e.dataTransfer.files &&
+                    e.dataTransfer.files.length > 0
+                ) {
                     addImagesFromFiles(e.dataTransfer.files);
                 }
             });
 
             document.addEventListener('paste', (e) => {
                 const items = e.clipboardData?.items;
+
                 if (!items) return;
+
                 for (const item of items) {
                     if (item.type.startsWith('image/')) {
                         const blob = item.getAsFile();
+
                         if (blob) {
                             e.preventDefault();
                             addImageFromBlob(blob);
@@ -882,23 +1080,46 @@
 
             loadUrlBtn.addEventListener('click', () => {
                 const url = urlInput.value.trim();
-                if (!url) return alert('لطفاً یک لینک معتبر وارد کنید.');
+
+                if (!url) {
+                    return alert('لطفاً یک لینک معتبر وارد کنید.');
+                }
+
                 addImageFromUrl(url);
             });
+
             urlInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') loadUrlBtn.click();
+                if (e.key === 'Enter') {
+                    loadUrlBtn.click();
+                }
             });
 
             lockAspectBtn.addEventListener('click', () => {
                 lockAspect = !lockAspect;
+
                 if (lockAspect) {
                     lockAspectBtn.classList.add('locked');
                     lockAspectBtn.textContent = '🔒';
+
                     if (imagesData.length > 0) {
-                        const ref = imagesData[selectedImageIndex] || imagesData[0];
-                        currentAspectRatio = getAspectRatio(ref.width, ref.height);
-                        targetHeight = Math.round(targetWidth / currentAspectRatio);
+                        const ref =
+                            imagesData[selectedImageIndex] ||
+                            imagesData[0];
+
+                        currentAspectRatio =
+                            getAspectRatio(
+                                ref.width,
+                                ref.height
+                            );
+
+                        targetHeight =
+                            Math.round(
+                                targetWidth /
+                                currentAspectRatio
+                            );
+
                         heightInput.value = targetHeight;
+
                         updateOutputResolutionLabel();
                     }
                 } else {
@@ -908,34 +1129,75 @@
             });
 
             widthInput.addEventListener('input', () => {
-                targetWidth = parseInt(widthInput.value) || 1;
+                targetWidth =
+                    parseInt(widthInput.value) || 1;
+
                 if (lockAspect) {
-                    targetHeight = Math.round(targetWidth / currentAspectRatio);
+                    targetHeight =
+                        Math.round(
+                            targetWidth /
+                            currentAspectRatio
+                        );
+
                     heightInput.value = targetHeight;
                 }
+
                 updateOutputResolutionLabel();
             });
 
             heightInput.addEventListener('input', () => {
-                targetHeight = parseInt(heightInput.value) || 1;
+                targetHeight =
+                    parseInt(heightInput.value) || 1;
+
                 if (lockAspect) {
-                    targetWidth = Math.round(targetHeight * currentAspectRatio);
+                    targetWidth =
+                        Math.round(
+                            targetHeight *
+                            currentAspectRatio
+                        );
+
                     widthInput.value = targetWidth;
                 }
+
+                updateOutputResolutionLabel();
+            });
+
+            clearImageBtn.addEventListener('click', () => {
+                clearPreviousData();
+
+                targetWidth = 2000;
+                targetHeight = 2000;
+                currentAspectRatio = 1;
+
+                widthInput.value = 2000;
+                heightInput.value = 2000;
+
                 updateOutputResolutionLabel();
             });
 
             applyResBtn.addEventListener('click', () => {
-                targetWidth = parseInt(widthInput.value) || 2000;
-                targetHeight = parseInt(heightInput.value) || 2000;
+                autoResize = false;
+
+                targetWidth =
+                    parseInt(widthInput.value) || 2000;
+
+                targetHeight =
+                    parseInt(heightInput.value) || 2000;
+
                 widthInput.value = targetWidth;
                 heightInput.value = targetHeight;
+
                 updateOutputResolutionLabel();
-                if (imagesData.length > 0) processAllImages();
+
+                if (imagesData.length > 0) {
+                    processAllImages();
+                }
             });
 
             formatSelect.addEventListener('change', () => {
-                if (imagesData.length > 0) processAllImages();
+                if (imagesData.length > 0) {
+                    processAllImages();
+                }
             });
 
             updateOutputResolutionLabel();
